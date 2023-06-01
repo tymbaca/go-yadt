@@ -1,0 +1,52 @@
+openapi: 3.0.1
+info:
+  title: Templater
+  version: 0.0.1
+paths:
+  /generate:
+    post:
+      description: Post template data start generation and return filename used in object storage.
+      requestBody:
+        description: JSON data with fields and values
+        content:
+          text/json:
+            schema:
+              $ref: '#/components/schemas/TemplateData'
+      responses:
+        200:
+          description: OK
+          content:
+            text/json:
+              schema:
+                type: string
+        400:
+          description: Wrong template data
+        418:
+          description: Server don't have a template.
+
+components:
+  schemas:
+    TemplateData:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+    File:
+      type: object
+      properties:
+        filename:
+          type: string
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Page'
+    Page:
+      type: object
+      properties:
+        organisation:
+          type: string
+        address:
+          type: string
+    
