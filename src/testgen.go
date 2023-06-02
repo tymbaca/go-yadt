@@ -45,6 +45,6 @@ var body string = `[
 func main() {
 	// filegen.NewFileGenerator(templateFileName: "template.docx", json_data: )
 	fmt.Println("hello")
-	fileGenerator := generator.NewFileGenerator("template.docx", body)
+	fileGenerator := generator.New("template.docx", body)
 	fileGenerator.GenerateZip("Output.zip")
 }
