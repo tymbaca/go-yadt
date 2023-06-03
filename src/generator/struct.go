@@ -8,6 +8,7 @@ type FileGenerator struct {
 	TempateFilename string
 	activeTemplate  *docx.Document
 	data            ParseData
+	filenames       []string
 }
 
 type ParseData []FileData
