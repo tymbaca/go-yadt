@@ -2,7 +2,9 @@ package generator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"templater/utils"
 
@@ -12,48 +14,83 @@ import (
 const MERGER_PROGRAM_NAME string = "pagemerger"
 const MERGER_PROGRAM_SET_PAGEBREAKS_OPTION string = "-b"
 
-func New(templateFileName string, json_data string) FileGenerator {
-	activeTemplate, err := docx.Open(templateFileName)
+func New(templateFilename string, json_data string) (*FileGenerator, error) {
+	fileGenerator := new(FileGenerator)
+	_, err := os.Stat(templateFilename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	fileGenerator := FileGenerator{TempateFilename: templateFileName}
-	fileGenerator.activeTemplate = activeTemplate
-	fileGenerator.data = parseJson(json_data)
-	return fileGenerator
+	fileGenerator.TempateFilename = templateFilename
+	fileGenerator.data, err = parseJson(json_data)
+	return fileGenerator, nil
 }
 
-func (s *FileGenerator) GenerateZip(filename string) {
-	s.GenerateFiles()
-	utils.CompressFiles(s.filenames, filename)
+func (s *FileGenerator) GenerateZip(filename string) error {
+
+	err := s.GenerateFiles()
+	if err != nil {
+		return err
+	}
+	err = utils.CompressFiles(s.filenames, filename)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *FileGenerator) GenerateFiles() {
+func (s *FileGenerator) GenerateFiles() error {
 	s.filenames = []string{}
-	for _, fileData := range s.data {
-		filename := fileData.generateFile(s.activeTemplate)
+	for _, fileData := range *s.data {
+		filename, err := fileData.generateFileAndReturnFilename(s.TempateFilename)
+		if err != nil {
+			return err
+		}
 		s.filenames = append(s.filenames, filename)
 	}
+	return nil
 }
 
-func (s *FileData) generateFile(template *docx.Document) string {
+func (s *FileData) generateFileAndReturnFilename(templateFilename string) (string, error) {
 	var pageFilenames []string
 	for i, pageData := range s.Pages {
 		pageFilename := s.Filename + "_" + fmt.Sprint(i) + ".docx"
-		generatePageFile(template, pageFilename, pageData)
+		pageFilenames = append(pageFilenames, pageFilename)
+		err := generatePageFile(templateFilename, pageFilename, pageData)
+		if err != nil {
+			return "", err
+		}
 	}
 	resultFilename := s.Filename + ".docx"
-	mergePageFilesToFile(pageFilenames, resultFilename)
-	return resultFilename
+	err := mergePageFilesToFile(pageFilenames, resultFilename)
+	if err != nil {
+		return "", err
+	}
+	return resultFilename, nil
 }
 
-func generatePageFile(template *docx.Document, pageFilename string, pageData docx.PlaceholderMap) {
-	template.ReplaceAll(pageData)
-	template.WriteToFile(pageFilename)
+func generatePageFile(templateFilename string, outputFilename string, pageData docx.PlaceholderMap) error {
+	template, err := docx.Open(templateFilename)
+	if err != nil {
+		return err
+	}
+
+	err = template.ReplaceAll(pageData)
+	if err != nil {
+		return err
+	}
+
+	err = template.WriteToFile(outputFilename)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error {
 	// args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames)
+	if len(targetFilenames) < 1 {
+		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
+	}
 	args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames...)
 	mergerCommand := exec.Command(MERGER_PROGRAM_NAME, args...)
 	err := mergerCommand.Run()
@@ -64,8 +101,11 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 }
 
-func parseJson(json_data string) ParseData {
-	parseData := ParseData{}
-	json.Unmarshal([]byte(json_data), &parseData)
-	return parseData
+func parseJson(json_data string) (*ParseData, error) {
+	parseData := new(ParseData)
+	err := json.Unmarshal([]byte(json_data), &parseData)
+	if err != nil {
+		return nil, err
+	}
+	return parseData, nil
 }
