@@ -11,6 +11,8 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
+const TMP_DIRECTORY string = "tmp/"
+
 const MERGER_PROGRAM_NAME string = "pagemerger"
 const MERGER_PROGRAM_SET_PAGEBREAKS_OPTION string = "-b"
 
@@ -53,14 +55,14 @@ func (s *FileGenerator) GenerateFiles() error {
 func (s *FileData) generateFileAndReturnFilename(templateFilename string) (string, error) {
 	var pageFilenames []string
 	for i, pageData := range s.Pages {
-		pageFilename := s.Filename + "_" + fmt.Sprint(i) + ".docx"
+		pageFilename := TMP_DIRECTORY + s.Filename + "_" + fmt.Sprint(i) + ".docx"
 		pageFilenames = append(pageFilenames, pageFilename)
 		err := generatePageFile(templateFilename, pageFilename, pageData)
 		if err != nil {
 			return "", err
 		}
 	}
-	resultFilename := s.Filename + ".docx"
+	resultFilename := TMP_DIRECTORY + s.Filename + ".docx"
 	err := mergePageFilesToFile(pageFilenames, resultFilename)
 	if err != nil {
 		return "", err
