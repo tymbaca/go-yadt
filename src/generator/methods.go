@@ -53,7 +53,9 @@ func generatePageFile(template *docx.Document, pageFilename string, pageData doc
 }
 
 func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error {
-	mergerCommand := exec.Command(MERGER_PROGRAM_NAME, MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename, targetFilenames)
+	// args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames)
+	args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames...)
+	mergerCommand := exec.Command(MERGER_PROGRAM_NAME, args...)
 	err := mergerCommand.Run()
 	if err != nil {
 		return err
