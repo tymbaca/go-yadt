@@ -3,9 +3,14 @@ package generator
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
+	"templater/utils"
 
 	"github.com/lukasjarosch/go-docx"
 )
+
+const MERGER_PROGRAM_NAME string = "pagemerger"
+const MERGER_PROGRAM_SET_PAGEBREAKS_OPTION string = "-b"
 
 func New(templateFileName string, json_data string) FileGenerator {
 	activeTemplate, err := docx.Open(templateFileName)
@@ -19,20 +24,16 @@ func New(templateFileName string, json_data string) FileGenerator {
 }
 
 func (s *FileGenerator) GenerateZip(filename string) {
-	s.generateFiles()
-	s.compress(filename)
+	s.GenerateFiles()
+	utils.CompressFiles(s.filenames, filename)
 }
 
-func (s *FileGenerator) generateFiles() {
+func (s *FileGenerator) GenerateFiles() {
 	s.filenames = []string{}
 	for _, fileData := range s.data {
 		filename := fileData.generateFile(s.activeTemplate)
 		s.filenames = append(s.filenames, filename)
 	}
-}
-
-func (s *FileGenerator) compress(filename string) {
-
 }
 
 func (s *FileData) generateFile(template *docx.Document) string {
@@ -42,7 +43,7 @@ func (s *FileData) generateFile(template *docx.Document) string {
 		generatePageFile(template, pageFilename, pageData)
 	}
 	resultFilename := s.Filename + ".docx"
-	mergeFilesToFile(pageFilenames, resultFilename)
+	mergePageFilesToFile(pageFilenames, resultFilename)
 	return resultFilename
 }
 
@@ -51,7 +52,15 @@ func generatePageFile(template *docx.Document, pageFilename string, pageData doc
 	template.WriteToFile(pageFilename)
 }
 
-func mergeFilesToFile(targetFilenames []string, mergedFilename string)
+func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error {
+	mergerCommand := exec.Command(MERGER_PROGRAM_NAME, MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename, targetFilenames)
+	err := mergerCommand.Run()
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
 
 func parseJson(json_data string) ParseData {
 	parseData := ParseData{}
