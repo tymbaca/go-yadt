@@ -7,147 +7,7 @@ import (
 )
 
 var body string = `[
-	{
-		"filename": "1. Monday",
-		"pages": [
-			{
-				"organisation": "Naturovo1",
-				"address": "Pcholkovo 481"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo2",
-				"address": "Pcholkovo 482"
-			},
-			{
-				"organisation": "Naturovo3",
-				"address": "Pcholkovo 483"
-			}
-		]
-	},
+	
 	{
 		"filename": "2. Вторник",
 		"pages": [
@@ -290,7 +150,7 @@ var body string = `[
 		]
 	},
 	{
-		"filename": "1. Monday",
+		"filename": "3. Среда",
 		"pages": [
 			{
 				"organisation": "Naturovo1",
@@ -431,7 +291,7 @@ var body string = `[
 		]
 	},
 	{
-		"filename": "1. Monday",
+		"filename": "4. Четверг",
 		"pages": [
 			{
 				"organisation": "Naturovo1",
@@ -572,7 +432,7 @@ var body string = `[
 		]
 	},
 	{
-		"filename": "1. Monday",
+		"filename": "5. Пятница",
 		"pages": [
 			{
 				"organisation": "Naturovo1",
@@ -713,7 +573,7 @@ var body string = `[
 		]
 	},
 	{
-		"filename": "1. Monday",
+		"filename": "5. Пятница",
 		"pages": [
 			{
 				"organisation": "Naturovo1",
@@ -852,7 +712,289 @@ var body string = `[
 				"address": "Pcholkovo 483"
 			}
 		]
-	}
+	},
+	{
+		"filename": "6. Суббота",
+		"pages": [
+			{
+				"organisation": "Naturovo1",
+				"address": "Pcholkovo 481"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo3",
+				"address": "Pcholkovo 483"
+			}
+		]
+	},
+	{
+		"filename": "7. Воскресенье",
+		"pages": [
+			{
+				"organisation": "Naturovo1",
+				"address": "Pcholkovo 481"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo2",
+				"address": "Pcholkovo 482"
+			},
+			{
+				"organisation": "Naturovo3",
+				"address": "Pcholkovo 483"
+			}
+		]
+	},
 ]`
 
 func main() {
