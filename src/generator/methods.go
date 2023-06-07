@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 	"templater/utils"
 
 	"github.com/lukasjarosch/go-docx"
@@ -42,32 +43,40 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 
 func (s *FileGenerator) GenerateFiles() error {
 	s.filenames = []string{}
-	for _, fileData := range *s.data {
-		filename, err := fileData.generateFileAndReturnFilename(s.TempateFilename)
-		if err != nil {
-			return err
-		}
-		s.filenames = append(s.filenames, filename)
+	var wg sync.WaitGroup
+	for i, fileData := range *s.data {
+		resultFilename := TMP_DIRECTORY + (*s.data)[i].Filename + ".docx"
+		wg.Add(1)
+		go func() {
+			fileData.generateFile(s.TempateFilename, resultFilename)
+			defer wg.Done()
+		}()
+		s.filenames = append(s.filenames, resultFilename)
 	}
+	wg.Wait()
 	return nil
 }
 
-func (s *FileData) generateFileAndReturnFilename(templateFilename string) (string, error) {
+func (s *FileData) generateFile(templateFilename string, resultFilename string) error {
 	var pageFilenames []string
+	var wg sync.WaitGroup
 	for i, pageData := range s.Pages {
 		pageFilename := TMP_DIRECTORY + s.Filename + "_" + fmt.Sprint(i) + ".docx"
 		pageFilenames = append(pageFilenames, pageFilename)
-		err := generatePageFile(templateFilename, pageFilename, pageData)
-		if err != nil {
-			return "", err
-		}
+
+		wg.Add(1)
+		go func() {
+			generatePageFile(templateFilename, pageFilename, pageData)
+			defer wg.Done()
+		}()
 	}
-	resultFilename := TMP_DIRECTORY + s.Filename + ".docx"
+	wg.Wait()
+
 	err := mergePageFilesToFile(pageFilenames, resultFilename)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return resultFilename, nil
+	return nil
 }
 
 func generatePageFile(templateFilename string, outputFilename string, pageData docx.PlaceholderMap) error {
