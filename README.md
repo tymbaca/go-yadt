@@ -27,7 +27,6 @@ For now this package only **eats raw `json` data in bytes**. You can set up pars
 Now let's set up our `json` into the file and name it `data.json`:
 
 ```json
-// data.json
 [
     {
         "filename":"First file",
