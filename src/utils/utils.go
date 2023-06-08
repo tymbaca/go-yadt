@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"path"
 )
 
 func CompressFiles(filenames []string, resultFilename string) error {
@@ -34,8 +35,11 @@ func putFileInArchive(filename string, zipWriter *zip.Writer) error {
 	if err != nil {
 		return err
 	}
+
+	cleanFilename := path.Base(filename)
+
 	// Init placeholder in zip
-	archiveFile, err := zipWriter.Create(filename)
+	archiveFile, err := zipWriter.Create(cleanFilename)
 	if err != nil {
 		return err
 	}
@@ -45,5 +49,5 @@ func putFileInArchive(filename string, zipWriter *zip.Writer) error {
 		return err
 	}
 
-	return nil
+	return err
 }
