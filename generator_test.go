@@ -19,9 +19,9 @@ func TestGenerateZip(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	fileCount := len(*fileGenerator.Data)
+	fileCount := len(*fileGenerator.data)
 	pageCount := 0
-	for _, fileData := range *fileGenerator.Data {
+	for _, fileData := range *fileGenerator.data {
 		pageCount += len(fileData.Pages)
 	}
 
