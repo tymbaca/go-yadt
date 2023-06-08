@@ -26,6 +26,7 @@ func TestGenerateZip(t *testing.T) {
 	}
 
 	t.Log(fmt.Sprintf("Starting generation for %d files, %d pages total...", fileCount, pageCount))
+	t.Log(fileGenerator.tmpDirectory)
 	err = fileGenerator.GenerateZip(outputZipFilename)
 	if err != nil {
 		t.Errorf(err.Error())

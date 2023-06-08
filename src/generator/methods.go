@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"sync"
 	"templater/utils"
 
 	"github.com/lukasjarosch/go-docx"
 )
 
-const TMP_DIRECTORY string = "tmp/"
+const tmpDirectory string = "tmp/"
 
-const MERGER_PROGRAM_NAME string = "pagemerger"
-const MERGER_PROGRAM_SET_PAGEBREAKS_OPTION string = "-b"
+const MergerProgramName string = "pagemerger"
+const MargerProgramSetPagebreaksOption string = "-b"
 
 func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
@@ -25,6 +26,8 @@ func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 	}
 	fileGenerator.TempateFilename = templateFilename
 	fileGenerator.Data, err = parseJson(json_data)
+
+	fileGenerator.tmpDirectory, err = os.MkdirTemp("", "")
 	return fileGenerator, nil
 }
 
@@ -38,6 +41,11 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 	if err != nil {
 		return err
 	}
+
+	err = os.RemoveAll(tmpDirectory)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -45,10 +53,10 @@ func (s *FileGenerator) GenerateFiles() error {
 	s.filenames = []string{}
 	var wg sync.WaitGroup
 	for i, fileData := range *s.Data {
-		resultFilename := TMP_DIRECTORY + (*s.Data)[i].Filename + ".docx"
+		resultFilename := path.Join(s.tmpDirectory, (*s.Data)[i].Filename+".docx")
 		wg.Add(1)
 		go func() {
-			fileData.generateFile(s.TempateFilename, resultFilename)
+			fileData.generateFile(s.TempateFilename, resultFilename, s.tmpDirectory)
 			defer wg.Done()
 		}()
 		s.filenames = append(s.filenames, resultFilename)
@@ -57,11 +65,11 @@ func (s *FileGenerator) GenerateFiles() error {
 	return nil
 }
 
-func (s *FileData) generateFile(templateFilename string, resultFilename string) error {
+func (s *FileData) generateFile(templateFilename string, resultFilename string, tmpDirectory string) error {
 	var pageFilenames []string
 	var wg sync.WaitGroup
 	for i, pageData := range s.Pages {
-		pageFilename := TMP_DIRECTORY + s.Filename + "_" + fmt.Sprint(i) + ".docx"
+		pageFilename := tmpDirectory + s.Filename + "_" + fmt.Sprint(i) + ".docx"
 		pageFilenames = append(pageFilenames, pageFilename)
 
 		wg.Add(1)
@@ -102,8 +110,8 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	if len(targetFilenames) < 1 {
 		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
 	}
-	args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames...)
-	mergerCommand := exec.Command(MERGER_PROGRAM_NAME, args...)
+	args := append([]string{MargerProgramSetPagebreaksOption, mergedFilename}, targetFilenames...)
+	mergerCommand := exec.Command(MergerProgramName, args...)
 	err := mergerCommand.Run()
 	if err != nil {
 		return err

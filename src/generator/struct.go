@@ -6,9 +6,11 @@ import (
 
 type FileGenerator struct {
 	TempateFilename string
-	activeTemplate  *docx.Document
 	Data            *ParseData
-	filenames       []string
+
+	activeTemplate *docx.Document
+	filenames      []string
+	tmpDirectory   string
 }
 
 type ParseData []FileData
