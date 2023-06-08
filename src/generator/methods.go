@@ -17,14 +17,14 @@ const TMP_DIRECTORY string = "tmp/"
 const MERGER_PROGRAM_NAME string = "pagemerger"
 const MERGER_PROGRAM_SET_PAGEBREAKS_OPTION string = "-b"
 
-func New(templateFilename string, json_data string) (*FileGenerator, error) {
+func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
 	_, err := os.Stat(templateFilename)
 	if err != nil {
 		return nil, err
 	}
 	fileGenerator.TempateFilename = templateFilename
-	fileGenerator.data, err = parseJson(json_data)
+	fileGenerator.Data, err = parseJson(json_data)
 	return fileGenerator, nil
 }
 
@@ -44,8 +44,8 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 func (s *FileGenerator) GenerateFiles() error {
 	s.filenames = []string{}
 	var wg sync.WaitGroup
-	for i, fileData := range *s.data {
-		resultFilename := TMP_DIRECTORY + (*s.data)[i].Filename + ".docx"
+	for i, fileData := range *s.Data {
+		resultFilename := TMP_DIRECTORY + (*s.Data)[i].Filename + ".docx"
 		wg.Add(1)
 		go func() {
 			fileData.generateFile(s.TempateFilename, resultFilename)
@@ -112,9 +112,9 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 }
 
-func parseJson(json_data string) (*ParseData, error) {
+func parseJson(json_data []byte) (*ParseData, error) {
 	parseData := new(ParseData)
-	err := json.Unmarshal([]byte(json_data), &parseData)
+	err := json.Unmarshal(json_data, &parseData)
 	if err != nil {
 		return nil, err
 	}
