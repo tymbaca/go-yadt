@@ -19,14 +19,14 @@ const tmpDirectory string = "tmp/"
 const mergerProgramName string = "pagemerger"
 const margerProgramSetPagebreaksOption string = "-b"
 
-func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
+func New(templateFilename string, jsonBytes []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
 	_, err := os.Stat(templateFilename)
 	if err != nil {
 		return nil, err
 	}
 	fileGenerator.TempateFilename = templateFilename
-	fileGenerator.data, err = parseJson(json_data)
+	fileGenerator.data, err = parseJson(jsonBytes)
 
 	return fileGenerator, nil
 }
