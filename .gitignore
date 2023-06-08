@@ -1,0 +1,6 @@
+tmp*
+*.docx
+!test_template.docx
+.vscode
+*.zip
+.DS_Store
