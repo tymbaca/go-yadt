@@ -20,9 +20,15 @@ Then you can import it by adding `github.com/tymbaca/go-yadt`.
 Use package via `yadt` shortcut.
 
 ### Input `docx` template
-Package needs a `docx` template with placeholder fields. You need to specify that fields in curly braces in following format:
+Package needs a *template* - `docx` file with placeholder fields. You need to specify that fields in curly braces in following format:
 ```
+// template.docx
+
+// docx text
+
 Hello, {firstName} {lastName}! How do you do?
+
+// more docx text
 ```
 
 In this example we have two fields:
