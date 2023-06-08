@@ -58,6 +58,8 @@ Now let's set up our `json` into the file and name it `data.json`:
 ```
 This structure is almost fully mandatory. Only items in `pages` can be deferent.
 
+The input *rules* are simple:
+
 - Whole json body is array
 - Every item of that array is an object with two fields:
   - `filename` which contains result file name (**without extension**)
