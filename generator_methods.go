@@ -16,8 +16,8 @@ import (
 
 const tmpDirectory string = "tmp/"
 
-const MergerProgramName string = "pagemerger"
-const MargerProgramSetPagebreaksOption string = "-b"
+const mergerProgramName string = "pagemerger"
+const margerProgramSetPagebreaksOption string = "-b"
 
 func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
@@ -26,7 +26,7 @@ func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 		return nil, err
 	}
 	fileGenerator.TempateFilename = templateFilename
-	fileGenerator.Data, err = parseJson(json_data)
+	fileGenerator.data, err = parseJson(json_data)
 
 	return fileGenerator, nil
 }
@@ -39,7 +39,7 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 	}
 	defer os.RemoveAll(s.tmpDirectory)
 
-	err = s.GenerateFiles()
+	err = s.generateFiles()
 	if err != nil {
 		return errors.New("Generation error: " + err.Error())
 	}
@@ -51,11 +51,11 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 	return nil
 }
 
-func (s *FileGenerator) GenerateFiles() error {
+func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
 	var wg sync.WaitGroup
-	for i, fileData := range *s.Data {
-		resultFilename := path.Join(s.tmpDirectory, (*s.Data)[i].Filename+".docx")
+	for i, fileData := range *s.data {
+		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
 		wg.Add(1)
 		go func() {
 			fileData.generateFile(s.TempateFilename, resultFilename, s.tmpDirectory)
@@ -67,7 +67,7 @@ func (s *FileGenerator) GenerateFiles() error {
 	return nil
 }
 
-func (s *FileData) generateFile(templateFilename string, resultFilename string, tmpDirectory string) error {
+func (s *fileData) generateFile(templateFilename string, resultFilename string, tmpDirectory string) error {
 	var pageFilenames []string
 	var wg sync.WaitGroup
 	for i, pageData := range s.Pages {
@@ -112,8 +112,8 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	if len(targetFilenames) < 1 {
 		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
 	}
-	args := append([]string{MargerProgramSetPagebreaksOption, mergedFilename}, targetFilenames...)
-	mergerCommand := exec.Command(MergerProgramName, args...)
+	args := append([]string{margerProgramSetPagebreaksOption, mergedFilename}, targetFilenames...)
+	mergerCommand := exec.Command(mergerProgramName, args...)
 	err := mergerCommand.Run()
 	if err != nil {
 		return err
@@ -122,8 +122,8 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 }
 
-func parseJson(json_data []byte) (*ParseData, error) {
-	parseData := new(ParseData)
+func parseJson(json_data []byte) (*parseData, error) {
+	parseData := new(parseData)
 	err := json.Unmarshal(json_data, &parseData)
 	if err != nil {
 		return nil, err

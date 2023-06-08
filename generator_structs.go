@@ -6,16 +6,16 @@ import (
 
 type FileGenerator struct {
 	TempateFilename string
-	Data            *ParseData
+	data            *parseData
 
 	activeTemplate *docx.Document
 	filenames      []string
 	tmpDirectory   string
 }
 
-type ParseData []FileData
+type parseData []fileData
 
-type FileData struct {
+type fileData struct {
 	Filename string                `json:"filename"`
 	Pages    []docx.PlaceholderMap `json:"pages"`
 }
