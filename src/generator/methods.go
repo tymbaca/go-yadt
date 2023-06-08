@@ -27,25 +27,26 @@ func New(templateFilename string, json_data []byte) (*FileGenerator, error) {
 	fileGenerator.TempateFilename = templateFilename
 	fileGenerator.Data, err = parseJson(json_data)
 
-	fileGenerator.tmpDirectory, err = os.MkdirTemp("", "")
 	return fileGenerator, nil
 }
 
 func (s *FileGenerator) GenerateZip(filename string) error {
-
-	err := s.GenerateFiles()
+	var err error
+	s.tmpDirectory, err = os.MkdirTemp("", "")
 	if err != nil {
-		return err
+		panic(errors.New("Error while creating temporary directory: " + err.Error()))
+	}
+	defer os.RemoveAll(s.tmpDirectory)
+
+	err = s.GenerateFiles()
+	if err != nil {
+		return errors.New("Generation error: " + err.Error())
 	}
 	err = utils.CompressFiles(s.filenames, filename)
 	if err != nil {
-		return err
+		return errors.New("Compression error: " + err.Error())
 	}
 
-	err = os.RemoveAll(tmpDirectory)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
