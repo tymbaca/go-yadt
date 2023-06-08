@@ -16,6 +16,6 @@ type FileGenerator struct {
 type parseData []fileData
 
 type fileData struct {
-	Filename string                `json:"filename"`
-	Pages    []docx.PlaceholderMap `json:"pages"`
+	Filename string                `json:"filename", binding:"required"`
+	Pages    []docx.PlaceholderMap `json:"pages", binding:"required"`
 }
