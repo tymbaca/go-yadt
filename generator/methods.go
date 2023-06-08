@@ -8,7 +8,8 @@ import (
 	"os/exec"
 	"path"
 	"sync"
-	"templater/utils"
+
+	"github.com/tymbaca/go-yadt/utils"
 
 	"github.com/lukasjarosch/go-docx"
 )

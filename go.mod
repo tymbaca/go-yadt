@@ -1,4 +1,4 @@
-module github.com/tymbaca/go-docx-templater
+module github.com/tymbaca/go-yadt
 
 go 1.20
 
