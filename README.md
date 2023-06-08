@@ -1,6 +1,6 @@
 # go-yadt
 
-This `Go` package can generate `.docx` files from your template and `json` data.
+This `Go` package can generate `.docx` files from your template and `json` data. `Yadt` stands for "Yet Another Docx Templater"
 
 > **Warning**
 > This package requires an [page merger CLI tool](https://github.com/tymbaca/pagemerger).
