@@ -4,7 +4,7 @@ This `Go` package can generate `.docx` files from your template and `json` data.
 
 > **Warning**
 > This package requires an [page merger CLI tool](https://github.com/tymbaca/pagemerger).
-> For now the only option is to build it from source. I hope could publish an `.deb` package of binary soon.
+> For now the only option is to build it from source. I hope I could publish an `.deb` package and homebrew tap soon.
 
 ## Install
 
