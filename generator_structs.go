@@ -8,9 +8,8 @@ type FileGenerator struct {
 	templateBytes []byte
 	data          *parseData
 
-	activeTemplate *docx.Document
-	filenames      []string
-	tmpDirectory   string
+	filenames    []string
+	tmpDirectory string
 }
 
 type parseData []fileData
