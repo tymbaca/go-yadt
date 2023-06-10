@@ -14,19 +14,48 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
-const tmpDirectory string = "tmp/"
-
 const mergerProgramName string = "pagemerger"
 const margerProgramSetPagebreaksOption string = "-b"
 
-func New(templateFilename string, jsonBytes []byte) (*FileGenerator, error) {
+func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error) {
+	var err error
 	fileGenerator := new(FileGenerator)
+
+	fileGenerator.templateBytes = templateBytes
+	fileGenerator.data, err = parseJson(jsonBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileGenerator, nil
+}
+
+func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator, error) {
+	fileGenerator := new(FileGenerator)
+
+	// Check if files exists
 	_, err := os.Stat(templateFilename)
 	if err != nil {
 		return nil, err
 	}
-	fileGenerator.TempateFilename = templateFilename
+	_, err = os.Stat(jsonFilename)
+	if err != nil {
+		return nil, err
+	}
+
+	fileGenerator.templateBytes, err = os.ReadFile(templateFilename)
+	if err != nil {
+		return nil, err
+	}
+
+	jsonBytes, err := os.ReadFile(jsonFilename)
+	if err != nil {
+		return nil, err
+	}
 	fileGenerator.data, err = parseJson(jsonBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	return fileGenerator, nil
 }
@@ -58,7 +87,7 @@ func (s *FileGenerator) generateFiles() error {
 		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
 		wg.Add(1)
 		go func() {
-			fileData.generateFile(s.TempateFilename, resultFilename, s.tmpDirectory)
+			fileData.generateFile(s.templateBytes, resultFilename, s.tmpDirectory)
 			defer wg.Done()
 		}()
 		s.filenames = append(s.filenames, resultFilename)
@@ -67,7 +96,7 @@ func (s *FileGenerator) generateFiles() error {
 	return nil
 }
 
-func (s *fileData) generateFile(templateFilename string, resultFilename string, tmpDirectory string) error {
+func (s *fileData) generateFile(templateBytes []byte, resultFilename string, tmpDirectory string) error {
 	var pageFilenames []string
 	var wg sync.WaitGroup
 	for i, pageData := range s.Pages {
@@ -76,7 +105,7 @@ func (s *fileData) generateFile(templateFilename string, resultFilename string, 
 
 		wg.Add(1)
 		go func() {
-			generatePageFile(templateFilename, pageFilename, pageData)
+			generatePageFile(templateBytes, pageFilename, pageData)
 			defer wg.Done()
 		}()
 	}
@@ -89,8 +118,8 @@ func (s *fileData) generateFile(templateFilename string, resultFilename string, 
 	return nil
 }
 
-func generatePageFile(templateFilename string, outputFilename string, pageData docx.PlaceholderMap) error {
-	template, err := docx.Open(templateFilename)
+func generatePageFile(templateBytes []byte, outputFilename string, pageData docx.PlaceholderMap) error {
+	template, err := docx.OpenBytes(templateBytes)
 	if err != nil {
 		return err
 	}

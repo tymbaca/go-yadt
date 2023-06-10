@@ -2,7 +2,6 @@ package yadt
 
 import (
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -13,8 +12,7 @@ var (
 )
 
 func TestGenerateZip(t *testing.T) {
-	body, err := os.ReadFile(waybillFilename)
-	fileGenerator, err := New(templateFilename, body)
+	fileGenerator, err := NewFromFiles(templateFilename, waybillFilename)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

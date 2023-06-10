@@ -4,7 +4,7 @@ This `Go` package can generate `.docx` files from your template and `json` data.
 
 > **Warning**
 > This package requires an [page merger CLI tool](https://github.com/tymbaca/pagemerger).
-> For now the only option is to build it from source. I hope could publish an `.deb` package of binary soon.
+> For now the only option is to build it from source. I hope I could publish an `.deb` package and homebrew tap soon.
 
 ## Install
 
@@ -95,11 +95,9 @@ import (
     "github.com/tymbaca/go-yadt"
 )
 
-// Read bytes from json file
-bodyBytes, _ = os.ReadFile("data.json")
 
 // Create instance of FileGenerator
-fileGenerator, err := yadt.New("template.docx")
+fileGenerator, err := yadt.NewFromFiles("template.docx", "data.json")
 if err != nil {
     panic(err)
 }
@@ -125,3 +123,4 @@ On output you will get a `output.zip` archive which contains all files specified
 
 ## Questions
 - [ ] What if some placeholder appear in `docx` template more than once? 
+  - I think this question more related to github.com/lukasjarosch/go-docx... 
