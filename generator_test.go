@@ -15,9 +15,29 @@ var (
 	outputZipFilename = "tests/output.zip"
 )
 
+func TestNew(t *testing.T) {
+	templateStream, _ := os.Open(templateFilename)
+	jsonStream, _ := os.Open(waybillFilename)
+
+	templateBytesReference, _ := os.ReadFile(templateFilename)
+	jsonBytesReference, _ := os.ReadFile(waybillFilename)
+
+	fileGenerator, err := New(templateStream, jsonStream)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	var parseDataReference *parseData
+	json.Unmarshal(jsonBytesReference, &parseDataReference)
+
+	assert.Equal(t, fileGenerator.templateBytes, templateBytesReference)
+	assert.Equal(t, fileGenerator.data, parseDataReference)
+}
+
 func TestNewFromBytes(t *testing.T) {
 	templateBytesReference, _ := os.ReadFile(templateFilename)
 	jsonBytesReference, _ := os.ReadFile(waybillFilename)
+
 	fileGenerator, err := NewFromBytes(templateBytesReference, jsonBytesReference)
 	if err != nil {
 		t.Errorf(err.Error())
