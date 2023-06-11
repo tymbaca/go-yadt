@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -15,14 +16,35 @@ import (
 )
 
 const mergerProgramName string = "pagemerger"
-const margerProgramSetPagebreaksOption string = "-b"
+const mergerProgramSetPageBreaksOption string = "-b"
+
+var err error
+
+func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error) {
+	fileGenerator := new(FileGenerator)
+
+	templateBytes, err := utils.StreamToBytes(templateStream)
+	if err != nil {
+		return nil, err
+	}
+	jsonBytes, err := utils.StreamToBytes(jsonStream)
+	if err != nil {
+		return nil, err
+	}
+
+	fileGenerator.templateBytes = templateBytes
+	fileGenerator.data, err = parseJsonToData(jsonBytes)
+	if err != nil {
+		return nil, err
+	}
+	return fileGenerator, nil
+}
 
 func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error) {
-	var err error
 	fileGenerator := new(FileGenerator)
 
 	fileGenerator.templateBytes = templateBytes
-	fileGenerator.data, err = parseJson(jsonBytes)
+	fileGenerator.data, err = parseJsonToData(jsonBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +74,7 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 	if err != nil {
 		return nil, err
 	}
-	fileGenerator.data, err = parseJson(jsonBytes)
+	fileGenerator.data, err = parseJsonToData(jsonBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +163,7 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	if len(targetFilenames) < 1 {
 		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
 	}
-	args := append([]string{margerProgramSetPagebreaksOption, mergedFilename}, targetFilenames...)
+	args := append([]string{mergerProgramSetPageBreaksOption, mergedFilename}, targetFilenames...)
 	mergerCommand := exec.Command(mergerProgramName, args...)
 	err := mergerCommand.Run()
 	if err != nil {
@@ -151,7 +173,7 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 }
 
-func parseJson(json_data []byte) (*parseData, error) {
+func parseJsonToData(json_data []byte) (*parseData, error) {
 	parseData := new(parseData)
 	err := json.Unmarshal(json_data, &parseData)
 	if err != nil {
