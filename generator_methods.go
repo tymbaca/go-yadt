@@ -15,9 +15,6 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
-const mergerProgramName string = "pagemerger"
-const mergerProgramSetPageBreaksOption string = "-b"
-
 var err error
 
 func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error) {
@@ -33,7 +30,7 @@ func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return fileGenerator, nil
 }
 
@@ -64,7 +61,7 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return fileGenerator, nil
 }
 
