@@ -146,8 +146,8 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	if len(targetFilenames) < 1 {
 		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
 	}
-	args := append([]string{mergerProgramSetPageBreaksOption, mergedFilename}, targetFilenames...)
-	mergerCommand := exec.Command(mergerProgramName, args...)
+	args := append([]string{mergerSetPageBreaksOption, mergedFilename}, targetFilenames...)
+	mergerCommand := exec.Command(pageMergerName, args...)
 	err := mergerCommand.Run()
 	if err != nil {
 		return err
