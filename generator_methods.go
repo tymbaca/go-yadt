@@ -15,14 +15,9 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
-const mergerProgramName string = "pagemerger"
-const mergerProgramSetPageBreaksOption string = "-b"
-
 var err error
 
 func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error) {
-	fileGenerator := new(FileGenerator)
-
 	templateBytes, err := utils.StreamToBytes(templateStream)
 	if err != nil {
 		return nil, err
@@ -31,12 +26,11 @@ func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error)
 	if err != nil {
 		return nil, err
 	}
-
-	fileGenerator.templateBytes = templateBytes
-	fileGenerator.data, err = parseJsonToData(jsonBytes)
+	fileGenerator, err := NewFromBytes(templateBytes, jsonBytes)
 	if err != nil {
 		return nil, err
 	}
+
 	return fileGenerator, nil
 }
 
@@ -53,28 +47,17 @@ func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error
 }
 
 func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator, error) {
-	fileGenerator := new(FileGenerator)
 
-	// Check if files exists
-	_, err := os.Stat(templateFilename)
+	templateBytes, err := os.ReadFile(templateFilename)
 	if err != nil {
 		return nil, err
 	}
-	_, err = os.Stat(jsonFilename)
-	if err != nil {
-		return nil, err
-	}
-
-	fileGenerator.templateBytes, err = os.ReadFile(templateFilename)
-	if err != nil {
-		return nil, err
-	}
-
 	jsonBytes, err := os.ReadFile(jsonFilename)
 	if err != nil {
 		return nil, err
 	}
-	fileGenerator.data, err = parseJsonToData(jsonBytes)
+
+	fileGenerator, err := NewFromBytes(templateBytes, jsonBytes)
 	if err != nil {
 		return nil, err
 	}
