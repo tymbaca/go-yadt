@@ -1,6 +1,7 @@
 package yadt
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/tymbaca/go-yadt/utils"
 
@@ -68,11 +70,13 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 
 func (s *FileGenerator) GenerateZip(filename string) error {
 	var err error
-	s.tmpDirectory, err = os.MkdirTemp("", "")
+	s.tmpDirectory, err = os.MkdirTemp("./fixing/", "fixing-yadt") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
+	log.Printf("Created tmp directory: %s", s.tmpDirectory)
 	if err != nil {
 		panic(errors.New("Error while creating temporary directory: " + err.Error()))
 	}
-	defer os.RemoveAll(s.tmpDirectory)
+	// TODO uncomment after fix
+	// defer os.RemoveAll(s.tmpDirectory)
 
 	err = s.generateFiles()
 	if err != nil {
@@ -88,34 +92,29 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 
 func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
-	var wg sync.WaitGroup
+	errg, _ := errgroup.WithContext(context.Background())
 	for i, fileData := range *s.data {
+
 		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
-		wg.Add(1)
-		go func() {
-			fileData.generateFile(s.templateBytes, resultFilename, s.tmpDirectory)
-			defer wg.Done()
-		}()
+		errg.Go(func() error {
+			err := generateFile(&fileData, s.templateBytes, resultFilename, s.tmpDirectory)
+			return err
+		})
 		s.filenames = append(s.filenames, resultFilename)
 	}
-	wg.Wait()
-	return nil
+	return errg.Wait()
 }
 
-func (s *fileData) generateFile(templateBytes []byte, resultFilename string, tmpDirectory string) error {
+func generateFile(fileData *fileData, templateBytes []byte, resultFilename string, tmpDirectory string) error {
+	log.Printf("Enter. Data filename: %s. Result filename: %s", fileData.Filename, path.Base(resultFilename))
 	var pageFilenames []string
-	var wg sync.WaitGroup
-	for i, pageData := range s.Pages {
-		pageFilename := path.Join(tmpDirectory, s.Filename+"_"+fmt.Sprint(i)+".docx")
+
+	for i, pageData := range fileData.Pages {
+		pageFilename := path.Join(tmpDirectory, fileData.Filename+"_"+fmt.Sprint(i)+".docx")
 		pageFilenames = append(pageFilenames, pageFilename)
 
-		wg.Add(1)
-		go func() {
-			generatePageFile(templateBytes, pageFilename, pageData)
-			defer wg.Done()
-		}()
+		generatePageFile(templateBytes, pageFilename, pageData)
 	}
-	wg.Wait()
 
 	if len(pageFilenames) >= 2 {
 		err := mergePageFilesToFile(pageFilenames, resultFilename)
@@ -123,6 +122,7 @@ func (s *fileData) generateFile(templateBytes []byte, resultFilename string, tmp
 			return err
 		}
 	} else {
+		log.Printf("Renaming %s to %s", path.Base(pageFilenames[0]), path.Base(resultFilename))
 		err := os.Rename(pageFilenames[0], resultFilename)
 		if err != nil {
 			return err
