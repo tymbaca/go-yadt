@@ -121,12 +121,13 @@ func generateFile(fileData *fileData, templateBytes []byte, resultFilename strin
 		if err != nil {
 			return err
 		}
+		log.Printf("Merging. Result filename:  %s, files: %s", path.Base(resultFilename), pageFilenames)
 	} else {
-		log.Printf("Renaming %s to %s", path.Base(pageFilenames[0]), path.Base(resultFilename))
 		err := os.Rename(pageFilenames[0], resultFilename)
 		if err != nil {
 			return err
 		}
+		log.Printf("Renamed %s to %s", path.Base(pageFilenames[0]), path.Base(resultFilename))
 	}
 	return nil
 }
