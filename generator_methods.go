@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -105,7 +106,7 @@ func (s *fileData) generateFile(templateBytes []byte, resultFilename string, tmp
 	var pageFilenames []string
 	var wg sync.WaitGroup
 	for i, pageData := range s.Pages {
-		pageFilename := tmpDirectory + s.Filename + "_" + fmt.Sprint(i) + ".docx"
+		pageFilename := path.Join(tmpDirectory, s.Filename+"_"+fmt.Sprint(i)+".docx")
 		pageFilenames = append(pageFilenames, pageFilename)
 
 		wg.Add(1)
@@ -116,9 +117,16 @@ func (s *fileData) generateFile(templateBytes []byte, resultFilename string, tmp
 	}
 	wg.Wait()
 
-	err := mergePageFilesToFile(pageFilenames, resultFilename)
-	if err != nil {
-		return err
+	if len(pageFilenames) >= 2 {
+		err := mergePageFilesToFile(pageFilenames, resultFilename)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := os.Rename(pageFilenames[0], resultFilename)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -148,9 +156,10 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 	args := append([]string{mergerSetPageBreaksOption, mergedFilename}, targetFilenames...)
 	mergerCommand := exec.Command(pageMergerName, args...)
-	err := mergerCommand.Run()
+	output, err := mergerCommand.Output()
 	if err != nil {
-		return err
+		log.Println(string(output))
+		panic(err)
 	} else {
 		return nil
 	}
