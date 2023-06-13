@@ -94,7 +94,7 @@ func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
 	errg, _ := errgroup.WithContext(context.Background())
 	for i, fileData := range *s.data {
-		tmpDirectory, err := os.MkdirTemp("./fixing/", "fixing-yadt")
+		tmpDirectory, err := os.MkdirTemp("./fixing/", fileData.Filename)
 		log.Printf("Created tmp directory: %s", tmpDirectory)
 		if err != nil {
 			panic(errors.New("Error while creating temporary directory: " + err.Error()))
