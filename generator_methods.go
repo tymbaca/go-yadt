@@ -70,11 +70,11 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 
 func (s *FileGenerator) GenerateZip(filename string) error {
 	var err error
-	s.tmpDirectory, err = os.MkdirTemp("./fixing/", "fixing-yadt") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
-	log.Printf("Created tmp directory: %s", s.tmpDirectory)
-	if err != nil {
-		panic(errors.New("Error while creating temporary directory: " + err.Error()))
-	}
+	// s.tmpDirectory, err = os.MkdirTemp("./fixing/", "fixing-yadt") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
+	// log.Printf("Created tmp directory: %s", s.tmpDirectory)
+	// if err != nil {
+	// 	panic(errors.New("Error while creating temporary directory: " + err.Error()))
+	// }
 	// TODO uncomment after fix
 	// defer os.RemoveAll(s.tmpDirectory)
 
@@ -94,10 +94,15 @@ func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
 	errg, _ := errgroup.WithContext(context.Background())
 	for i, fileData := range *s.data {
+		tmpDirectory, err := os.MkdirTemp("./fixing/", "fixing-yadt")
+		log.Printf("Created tmp directory: %s", tmpDirectory)
+		if err != nil {
+			panic(errors.New("Error while creating temporary directory: " + err.Error()))
+		}
 
-		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
+		resultFilename := path.Join(tmpDirectory, (*s.data)[i].Filename+".docx")
 		errg.Go(func() error {
-			err := generateFile(&fileData, s.templateBytes, resultFilename, s.tmpDirectory)
+			err := generateFile(&fileData, s.templateBytes, resultFilename, tmpDirectory)
 			return err
 		})
 		s.filenames = append(s.filenames, resultFilename)
