@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -77,16 +76,16 @@ func (s *FileGenerator) GenerateZip(path string) error {
 	s.tmpDirectory, err = os.MkdirTemp("", "") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
 	defer os.RemoveAll(s.tmpDirectory)
 	if err != nil {
-		panic(errors.New("Error while creating temporary directory: " + err.Error()))
+		panic(fmt.Errorf("error while creating temporary directory: " + err.Error()))
 	}
 
 	err = s.generateFiles()
 	if err != nil {
-		return errors.New("Generation error: " + err.Error())
+		return fmt.Errorf("generation error: " + err.Error())
 	}
 	err = utils.CompressFiles(s.filenames, path)
 	if err != nil {
-		return errors.New("Compression error: " + err.Error())
+		return fmt.Errorf("compression error: " + err.Error())
 	}
 
 	return nil
@@ -186,10 +185,9 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 	}
 	args := append([]string{mergerSetPageBreaksOption, mergedFilename}, targetFilenames...)
 	mergerCommand := exec.Command(pageMergerName, args...)
-	output, err := mergerCommand.Output()
+	output, err := mergerCommand.CombinedOutput()
 	if err != nil {
-		log.Println(string(output))
-		panic(err)
+		return fmt.Errorf("error while using pagemerger CLI: \n%s", string(output))
 	} else {
 		return nil
 	}
