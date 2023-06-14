@@ -20,6 +20,7 @@ import (
 
 var err error
 
+// FileGenerator constructor. Takes template and json data as an io.Reader's.
 func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error) {
 	templateBytes, err := utils.StreamToBytes(templateStream)
 	if err != nil {
@@ -37,6 +38,7 @@ func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error)
 	return fileGenerator, nil
 }
 
+// FileGenerator constructor. Takes template and json data in byte slices.
 func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
 
@@ -49,6 +51,7 @@ func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error
 	return fileGenerator, nil
 }
 
+// FileGenerator constructor. Takes template and json data filenames and read them.
 func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator, error) {
 
 	templateBytes, err := os.ReadFile(templateFilename)
@@ -68,7 +71,8 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 	return fileGenerator, nil
 }
 
-func (s *FileGenerator) GenerateZip(filename string) error {
+// Generates docx files and packs them into zip file at the specified path.
+func (s *FileGenerator) GenerateZip(path string) error {
 	var err error
 	s.tmpDirectory, err = os.MkdirTemp("", "") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
 	defer os.RemoveAll(s.tmpDirectory)
@@ -80,7 +84,7 @@ func (s *FileGenerator) GenerateZip(filename string) error {
 	if err != nil {
 		return errors.New("Generation error: " + err.Error())
 	}
-	err = utils.CompressFiles(s.filenames, filename)
+	err = utils.CompressFiles(s.filenames, path)
 	if err != nil {
 		return errors.New("Compression error: " + err.Error())
 	}
@@ -126,7 +130,7 @@ func generateFile(fileData fileData, templateBytes []byte, resultFilename string
 			return err
 		}
 	} else {
-		return fmt.Errorf("File with name '%s' does not have page data", fileData.Filename)
+		return fmt.Errorf("file with name '%s' does not have page data", fileData.Filename)
 	}
 	return nil
 }
@@ -152,7 +156,7 @@ func generatePageFile(templateBytes []byte, outputFilename string, pageData docx
 func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error {
 	// args := append([]string{MERGER_PROGRAM_SET_PAGEBREAKS_OPTION, mergedFilename}, targetFilenames)
 	if len(targetFilenames) < 1 {
-		return errors.New("There is no specified files to merge. Pass 1 or more filenames.")
+		return errors.New("there is no specified files to merge, pass 1 or more filenames")
 	}
 	args := append([]string{mergerSetPageBreaksOption, mergedFilename}, targetFilenames...)
 	mergerCommand := exec.Command(pageMergerName, args...)
