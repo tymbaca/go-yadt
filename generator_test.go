@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	waybillFilename   = "tests/waybill.json"
-	templateFilename  = "tests/test_template.docx"
-	outputZipFilename = "tests/output.zip"
+	waybillFilename    = "tests/waybill.json"
+	badWaybillFilename = "tests/bad_waybill.json"
+	templateFilename   = "tests/test_template.docx"
+	outputZipFilename  = "tests/output.zip"
 )
 
 func TestNew(t *testing.T) {
@@ -85,5 +87,31 @@ func TestGenerateZip(t *testing.T) {
 	err = fileGenerator.GenerateZip(outputZipFilename)
 	if err != nil {
 		t.Errorf(err.Error())
+	}
+}
+
+func TestBadGenerateZip(t *testing.T) {
+	fileGenerator, err := NewFromFiles(templateFilename, badWaybillFilename)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	fileCount := len(*fileGenerator.data)
+	pageCount := 0
+	for _, fileData := range *fileGenerator.data {
+		pageCount += len(fileData.Pages)
+	}
+
+	t.Log(fmt.Sprintf("Starting generation for %d files, %d pages total...", fileCount, pageCount))
+	t.Log(fileGenerator.tmpDirectory)
+
+	// Run test
+	err = fileGenerator.GenerateZip(outputZipFilename)
+	// This is too smell
+	if err != nil && strings.Contains(err.Error(), "does not have page data") {
+		// PASS
+		t.Log(err.Error())
+	} else {
+		t.Fail()
 	}
 }
