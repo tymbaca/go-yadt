@@ -94,6 +94,7 @@ func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
 	errg, _ := errgroup.WithContext(context.Background())
 	for i, fileData := range *s.data {
+		currentFileData := fileData
 		tmpDirectory, err := os.MkdirTemp("./fixing/", fileData.Filename)
 		log.Printf("Created tmp directory: %s", tmpDirectory)
 		if err != nil {
@@ -102,7 +103,7 @@ func (s *FileGenerator) generateFiles() error {
 
 		resultFilename := path.Join(tmpDirectory, (*s.data)[i].Filename+".docx")
 		errg.Go(func() error {
-			err := generateFile(&fileData, s.templateBytes, resultFilename, tmpDirectory)
+			err := generateFile(currentFileData, s.templateBytes, resultFilename, tmpDirectory)
 			return err
 		})
 		s.filenames = append(s.filenames, resultFilename)
@@ -110,7 +111,7 @@ func (s *FileGenerator) generateFiles() error {
 	return errg.Wait()
 }
 
-func generateFile(fileData *fileData, templateBytes []byte, resultFilename string, tmpDirectory string) error {
+func generateFile(fileData fileData, templateBytes []byte, resultFilename string, tmpDirectory string) error {
 	log.Printf("Enter. Data filename: %s. Result filename: %s", fileData.Filename, path.Base(resultFilename))
 	var pageFilenames []string
 
@@ -121,6 +122,7 @@ func generateFile(fileData *fileData, templateBytes []byte, resultFilename strin
 		generatePageFile(templateBytes, pageFilename, pageData)
 	}
 
+	// Avoiding pagemerger call if it unnecessary
 	if len(pageFilenames) >= 2 {
 		err := mergePageFilesToFile(pageFilenames, resultFilename)
 		if err != nil {
