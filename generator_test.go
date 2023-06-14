@@ -2,7 +2,6 @@ package yadt
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -80,7 +79,7 @@ func TestGenerateZip(t *testing.T) {
 		pageCount += len(fileData.Pages)
 	}
 
-	t.Log(fmt.Sprintf("Starting generation for %d files, %d pages total...", fileCount, pageCount))
+	t.Logf("Starting generation for %d files, %d pages total...", fileCount, pageCount)
 	t.Log(fileGenerator.tmpDirectory)
 
 	// Run test
@@ -102,7 +101,7 @@ func TestBadGenerateZip(t *testing.T) {
 		pageCount += len(fileData.Pages)
 	}
 
-	t.Log(fmt.Sprintf("Starting generation for %d files, %d pages total...", fileCount, pageCount))
+	t.Logf("Starting generation for %d files, %d pages total...", fileCount, pageCount)
 	t.Log(fileGenerator.tmpDirectory)
 
 	// Run test

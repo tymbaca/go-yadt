@@ -94,48 +94,56 @@ func (s *FileGenerator) GenerateZip(path string) error {
 
 func (s *FileGenerator) generateFiles() error {
 	s.filenames = []string{}
-	errg, _ := errgroup.WithContext(context.Background())
-	for i, fileData := range *s.data {
-		currentFileData := fileData
+	eg, _ := errgroup.WithContext(context.Background())
+
+	for i, _fileData := range *s.data {
+		fileData := _fileData
 
 		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
-		errg.Go(func() error {
-			err := generateFile(currentFileData, s.templateBytes, resultFilename, s.tmpDirectory)
+		eg.Go(func() error {
+			err := generateFile(fileData, s.templateBytes, resultFilename, s.tmpDirectory)
 			return err
 		})
 		s.filenames = append(s.filenames, resultFilename)
 	}
-	return errg.Wait()
+	return eg.Wait()
 }
 
 func generateFile(fileData fileData, templateBytes []byte, resultFilename string, tmpDirectory string) error {
-	var pageFilenames []string
-
-	for i, pageData := range fileData.Pages {
-		pageFilename := path.Join(tmpDirectory, fileData.Filename+"_"+fmt.Sprint(i)+".docx")
-		pageFilenames = append(pageFilenames, pageFilename)
-
-		generatePageFile(templateBytes, pageFilename, pageData)
+	pageFilenames, err := generatePageFiles(fileData, templateBytes, tmpDirectory)
+	if err != nil {
+		return err
 	}
 
-	// Avoiding pagemerger call if it unnecessary
-	if len(pageFilenames) >= 2 {
-		err := mergePageFilesToFile(pageFilenames, resultFilename)
-		if err != nil {
-			return err
-		}
-	} else if len(pageFilenames) == 1 {
-		err := os.Rename(pageFilenames[0], resultFilename)
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("file with name '%s' does not have page data", fileData.Filename)
+	err = mergeOrRenamePageFiles(pageFilenames, resultFilename)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-func generatePageFile(templateBytes []byte, outputFilename string, pageData docx.PlaceholderMap) error {
+func generatePageFiles(fileData fileData, templateBytes []byte, tmpDirectory string) ([]string, error) {
+	var pageFilesPaths []string
+	var eg errgroup.Group
+
+	for i, _pageData := range fileData.Pages {
+		pageData := _pageData // Needed for goroutines
+
+		pageFilePath := path.Join(tmpDirectory, fileData.Filename+"_"+fmt.Sprint(i)+".docx")
+		pageFilesPaths = append(pageFilesPaths, pageFilePath)
+
+		eg.Go(func() error {
+			err := generatePageFile(templateBytes, pageFilePath, pageData)
+			return err
+		})
+	}
+	if err = eg.Wait(); err != nil {
+		return nil, err
+	}
+	return pageFilesPaths, nil
+}
+
+func generatePageFile(templateBytes []byte, outputPath string, pageData docx.PlaceholderMap) error {
 	template, err := docx.OpenBytes(templateBytes)
 	if err != nil {
 		return err
@@ -146,9 +154,27 @@ func generatePageFile(templateBytes []byte, outputFilename string, pageData docx
 		return err
 	}
 
-	err = template.WriteToFile(outputFilename)
+	err = template.WriteToFile(outputPath)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func mergeOrRenamePageFiles(pageFilesPaths []string, resultPath string) error {
+	// Avoiding pagemerger call if it unnecessary
+	if len(pageFilesPaths) >= 2 {
+		err := mergePageFilesToFile(pageFilesPaths, resultPath)
+		if err != nil {
+			return err
+		}
+	} else if len(pageFilesPaths) == 1 {
+		err := os.Rename(pageFilesPaths[0], resultPath)
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("file with name '%s' does not have page data", path.Base(resultPath))
 	}
 	return nil
 }
