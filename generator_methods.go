@@ -70,13 +70,11 @@ func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator,
 
 func (s *FileGenerator) GenerateZip(filename string) error {
 	var err error
-	// s.tmpDirectory, err = os.MkdirTemp("./fixing/", "fixing-yadt") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
-	// log.Printf("Created tmp directory: %s", s.tmpDirectory)
-	// if err != nil {
-	// 	panic(errors.New("Error while creating temporary directory: " + err.Error()))
-	// }
-	// TODO uncomment after fix
-	// defer os.RemoveAll(s.tmpDirectory)
+	s.tmpDirectory, err = os.MkdirTemp("", "") // TODO CHANGE MkdirTemp PARAMETERS TO ("", "") AFTER FIX
+	defer os.RemoveAll(s.tmpDirectory)
+	if err != nil {
+		panic(errors.New("Error while creating temporary directory: " + err.Error()))
+	}
 
 	err = s.generateFiles()
 	if err != nil {
@@ -95,15 +93,10 @@ func (s *FileGenerator) generateFiles() error {
 	errg, _ := errgroup.WithContext(context.Background())
 	for i, fileData := range *s.data {
 		currentFileData := fileData
-		tmpDirectory, err := os.MkdirTemp("./fixing/", fileData.Filename)
-		log.Printf("Created tmp directory: %s", tmpDirectory)
-		if err != nil {
-			panic(errors.New("Error while creating temporary directory: " + err.Error()))
-		}
 
-		resultFilename := path.Join(tmpDirectory, (*s.data)[i].Filename+".docx")
+		resultFilename := path.Join(s.tmpDirectory, (*s.data)[i].Filename+".docx")
 		errg.Go(func() error {
-			err := generateFile(currentFileData, s.templateBytes, resultFilename, tmpDirectory)
+			err := generateFile(currentFileData, s.templateBytes, resultFilename, s.tmpDirectory)
 			return err
 		})
 		s.filenames = append(s.filenames, resultFilename)
@@ -112,7 +105,6 @@ func (s *FileGenerator) generateFiles() error {
 }
 
 func generateFile(fileData fileData, templateBytes []byte, resultFilename string, tmpDirectory string) error {
-	log.Printf("Enter. Data filename: %s. Result filename: %s", fileData.Filename, path.Base(resultFilename))
 	var pageFilenames []string
 
 	for i, pageData := range fileData.Pages {
@@ -128,13 +120,13 @@ func generateFile(fileData fileData, templateBytes []byte, resultFilename string
 		if err != nil {
 			return err
 		}
-		log.Printf("Merging. Result filename:  %s, files: %s", path.Base(resultFilename), pageFilenames)
-	} else {
+	} else if len(pageFilenames) == 1 {
 		err := os.Rename(pageFilenames[0], resultFilename)
 		if err != nil {
 			return err
 		}
-		log.Printf("Renamed %s to %s", path.Base(pageFilenames[0]), path.Base(resultFilename))
+	} else {
+		return fmt.Errorf("File with name '%s' does not have page data", fileData.Filename)
 	}
 	return nil
 }
