@@ -14,6 +14,7 @@ import (
 
 	"github.com/tymbaca/go-yadt/utils"
 
+	mapset "github.com/deckarep/golang-set"
 	"github.com/lukasjarosch/go-docx"
 )
 
@@ -40,9 +41,15 @@ func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error)
 // FileGenerator constructor. Takes template and json data in byte slices.
 func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error) {
 	fileGenerator := new(FileGenerator)
+	data, err := parseJsonToData(jsonBytes)
+	if err != nil {
+		return nil, err
+	}
 
 	fileGenerator.templateBytes = templateBytes
-	fileGenerator.data, err = parseJsonToData(jsonBytes)
+	fileGenerator.data = data
+
+	err = fileGenerator.validateInput()
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +152,7 @@ func generatePageFiles(fileData fileData, templateBytes []byte, tmpDirectory str
 func generatePageFile(templateBytes []byte, outputPath string, pageData docx.PlaceholderMap) error {
 	template, err := docx.OpenBytes(templateBytes)
 	if err != nil {
-		return err
+		return ErrBadTemplate
 	}
 
 	err = template.ReplaceAll(pageData)
@@ -173,7 +180,7 @@ func mergeOrRenamePageFiles(pageFilesPaths []string, resultPath string) error {
 			return err
 		}
 	} else {
-		return fmt.Errorf("file with name '%s' does not have page data", path.Base(resultPath))
+		return ErrEmptyFile
 	}
 	return nil
 }
@@ -197,7 +204,91 @@ func parseJsonToData(json_data []byte) (*parseData, error) {
 	parseData := new(parseData)
 	err := json.Unmarshal(json_data, &parseData)
 	if err != nil {
-		return nil, err
+		return nil, ErrBadData
 	}
 	return parseData, nil
+}
+
+func (g *FileGenerator) validateInput() error {
+	err := g.validateTemplate()
+	if err != nil {
+		return err
+	}
+
+	err = g.validateData()
+	if err != nil {
+		return err
+	}
+
+	// err = g.validateIsCompatible()
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
+}
+
+func (g *FileGenerator) validateTemplate() error {
+	_, err := docx.OpenBytes(g.templateBytes)
+	if err != nil {
+		return ErrBadTemplate
+	}
+	return nil
+}
+
+func (g *FileGenerator) validateData() error {
+	files := *g.data
+	expectedFields := getPageDataFields(files[0].Pages[0])
+	for _, file := range files {
+		for _, page := range file.Pages {
+			fields := getPageDataFields(page)
+			if !expectedFields.Equal(fields) {
+				return ErrDataWithDifferentFields
+			}
+		}
+	}
+	return nil
+}
+
+func (g *FileGenerator) validateIsCompatible() error {
+	templateFields := getTemplateFields(g.templateBytes)
+	dataFields := getDataFields(g.data)
+	if !templateFields.Equal(dataFields) {
+		return ErrFieldsNotMatch
+	} else {
+		return nil
+	}
+}
+
+func getTemplateFields(templateBytes []byte) mapset.Set {
+	template, _ := docx.OpenBytes(templateBytes)
+	// if err != nil {
+	// 	return BadTemplateError
+	// }
+	fields := template.Placeholders()
+	placeholder := fields[0]
+	fmt.Println(placeholder)
+	for _, field := range fields {
+		fragments := field.Fragments
+		for _, fragment := range fragments {
+			str := fragment.String(templateBytes)
+			fmt.Println(str)
+			text := fragment.Text(templateBytes)
+			fmt.Println(text)
+		}
+	}
+	return nil
+}
+
+func getDataFields(parseData *parseData) mapset.Set {
+	data := *parseData
+	fields := getPageDataFields(data[0].Pages[0])
+	return fields
+}
+
+func getPageDataFields(pageData docx.PlaceholderMap) mapset.Set {
+	fields := mapset.NewSet()
+	for field := range pageData {
+		fields.Add(field)
+	}
+	return fields
 }

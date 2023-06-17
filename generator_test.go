@@ -2,26 +2,27 @@ package yadt
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	waybillFilename    = "tests/waybill.json"
-	badWaybillFilename = "tests/bad_waybill.json"
-	templateFilename   = "tests/test_template.docx"
-	outputZipFilename  = "tests/output.zip"
+	goodWaybill                = "tests/waybill.json"
+	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
+	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
+	templateFilename           = "tests/test_template.docx"
+	outputZipFilename          = "tests/output.zip"
 )
 
 func TestNew(t *testing.T) {
 	templateStream, _ := os.Open(templateFilename)
-	jsonStream, _ := os.Open(waybillFilename)
+	jsonStream, _ := os.Open(goodWaybill)
 
 	templateBytesReference, _ := os.ReadFile(templateFilename)
-	jsonBytesReference, _ := os.ReadFile(waybillFilename)
+	jsonBytesReference, _ := os.ReadFile(goodWaybill)
 
 	fileGenerator, err := New(templateStream, jsonStream)
 	if err != nil {
@@ -37,7 +38,7 @@ func TestNew(t *testing.T) {
 
 func TestNewFromBytes(t *testing.T) {
 	templateBytesReference, _ := os.ReadFile(templateFilename)
-	jsonBytesReference, _ := os.ReadFile(waybillFilename)
+	jsonBytesReference, _ := os.ReadFile(goodWaybill)
 
 	fileGenerator, err := NewFromBytes(templateBytesReference, jsonBytesReference)
 	if err != nil {
@@ -52,7 +53,7 @@ func TestNewFromBytes(t *testing.T) {
 }
 
 func TestNewFromFiles(t *testing.T) {
-	fileGenerator, err := NewFromFiles(templateFilename, waybillFilename)
+	fileGenerator, err := NewFromFiles(templateFilename, goodWaybill)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -60,7 +61,7 @@ func TestNewFromFiles(t *testing.T) {
 	templateBytesReference, _ := os.ReadFile(templateFilename)
 
 	var parseDataReference *parseData
-	jsonBytes, _ := os.ReadFile(waybillFilename)
+	jsonBytes, _ := os.ReadFile(goodWaybill)
 	json.Unmarshal(jsonBytes, &parseDataReference)
 
 	assert.Equal(t, fileGenerator.templateBytes, templateBytesReference)
@@ -68,7 +69,7 @@ func TestNewFromFiles(t *testing.T) {
 }
 
 func TestGenerateZip(t *testing.T) {
-	fileGenerator, err := NewFromFiles(templateFilename, waybillFilename)
+	fileGenerator, err := NewFromFiles(templateFilename, goodWaybill)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -89,10 +90,10 @@ func TestGenerateZip(t *testing.T) {
 	}
 }
 
-func TestBadGenerateZip(t *testing.T) {
-	fileGenerator, err := NewFromFiles(templateFilename, badWaybillFilename)
+func TestEmptyPageGenerateZip(t *testing.T) {
+	fileGenerator, err := NewFromFiles(templateFilename, waybillWithEmptyPageData)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err)
 	}
 
 	fileCount := len(*fileGenerator.data)
@@ -107,10 +108,17 @@ func TestBadGenerateZip(t *testing.T) {
 	// Run test
 	err = fileGenerator.GenerateZip(outputZipFilename)
 	// This is too smell
-	if err != nil && strings.Contains(err.Error(), "does not have page data") {
+	if errors.Is(err, ErrEmptyFile) {
 		// PASS
 		t.Log(err.Error())
 	} else {
 		t.Fail()
+	}
+}
+
+func TestDifferentFields(t *testing.T) {
+	_, err := NewFromFiles(templateFilename, waybillWithDifferentFields)
+	if !errors.Is(err, ErrDataWithDifferentFields) {
+		t.Fatal(err)
 	}
 }
