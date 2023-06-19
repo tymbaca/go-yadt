@@ -13,6 +13,7 @@ var (
 	goodWaybill                = "tests/waybill.json"
 	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
 	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
+	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
 	templateFilename           = "tests/test_template.docx"
 	outputZipFilename          = "tests/output.zip"
 )
@@ -120,5 +121,21 @@ func TestDifferentFields(t *testing.T) {
 	_, err := NewFromFiles(templateFilename, waybillWithDifferentFields)
 	if !errors.Is(err, ErrDataWithDifferentFields) {
 		t.Fatal(err)
+	}
+}
+
+func TestIncompatible(t *testing.T) {
+	fg, err := NewFromFiles(templateFilename, waybillIncompatible)
+	if err != nil {
+		// Ok
+	} else {
+		t.Fail()
+	}
+
+	err = fg.GenerateZip(outputZipFilename)
+	if err != nil {
+		// Ok
+	} else {
+		t.Fail()
 	}
 }
