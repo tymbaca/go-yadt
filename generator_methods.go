@@ -88,11 +88,11 @@ func (s *FileGenerator) GenerateZip(path string) error {
 
 	err = s.generateFiles()
 	if err != nil {
-		return fmt.Errorf("generation error: " + err.Error())
+		return err
 	}
 	err = utils.CompressFiles(s.filenames, path)
 	if err != nil {
-		return fmt.Errorf("compression error: " + err.Error())
+		return err
 	}
 
 	return nil
