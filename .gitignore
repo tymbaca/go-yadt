@@ -1,6 +1,7 @@
 tmp*
-*.docx
-!test_template.docx
+output
 .vscode
 *.zip
 .DS_Store
+__debug*
+local_*

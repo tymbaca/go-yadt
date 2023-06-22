@@ -180,7 +180,7 @@ func mergeOrRenamePageFiles(pageFilesPaths []string, resultPath string) error {
 			return err
 		}
 	} else {
-		return ErrEmptyFile
+		return ErrFileDataWithoutPages
 	}
 	return nil
 }
@@ -236,6 +236,19 @@ func (g *FileGenerator) validateTemplate() error {
 }
 
 func (g *FileGenerator) validateData() error {
+	err := g.checkDataFieldsPagesExist()
+	if err != nil {
+		return err
+	}
+	err = g.checkDataFieldSameness()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *FileGenerator) checkDataFieldSameness() error {
 	files := *g.data
 	expectedFields := getPageDataFields(files[0].Pages[0])
 	for _, file := range files {
@@ -249,11 +262,21 @@ func (g *FileGenerator) validateData() error {
 	return nil
 }
 
+func (g *FileGenerator) checkDataFieldsPagesExist() error {
+	files := *g.data
+	for _, file := range files {
+		if len(file.Pages) == 0 {
+			return ErrFileDataWithoutPages
+		}
+	}
+	return nil
+}
+
 func (g *FileGenerator) validateIsCompatible() error {
 	templateFields := getTemplateFields(g.templateBytes)
 	dataFields := getDataFields(g.data)
 	if !templateFields.Equal(dataFields) {
-		return ErrFieldsNotMatch
+		return ErrIncompatible
 	} else {
 		return nil
 	}

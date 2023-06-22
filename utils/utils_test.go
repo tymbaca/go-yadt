@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/xml"
 	"os"
 	"testing"
 
@@ -11,6 +12,7 @@ var (
 	imageFilename   = "tests/image.png"
 	articleFilename = "tests/article.md"
 	soundFilename   = "tests/sound.mp3"
+	goodTemplate    = "tests/template.docx"
 )
 
 func TestStreamToBytes(t *testing.T) {
@@ -32,4 +34,12 @@ func TestCompressFiles(t *testing.T) {
 	if _, err = os.Stat(outputFilename); err != nil {
 		t.Errorf("Error: There is no output zip!")
 	}
+}
+
+func TestDocxSearch(t *testing.T) {
+	docx_reader, err := os.Open(goodTemplate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoder := xml.NewDecoder()
 }

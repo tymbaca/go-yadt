@@ -15,6 +15,7 @@ var (
 	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
 	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
 	templateFilename           = "tests/test_template.docx"
+	emptyTemplatePath          = "tests/empty_template.docx"
 	outputZipFilename          = "tests/output.zip"
 )
 
@@ -92,28 +93,11 @@ func TestGenerateZip(t *testing.T) {
 }
 
 func TestEmptyPageGenerateZip(t *testing.T) {
-	fileGenerator, err := NewFromFiles(templateFilename, waybillWithEmptyPageData)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fileCount := len(*fileGenerator.data)
-	pageCount := 0
-	for _, fileData := range *fileGenerator.data {
-		pageCount += len(fileData.Pages)
-	}
-
-	t.Logf("Starting generation for %d files, %d pages total...", fileCount, pageCount)
-	t.Log(fileGenerator.tmpDirectory)
-
-	// Run test
-	err = fileGenerator.GenerateZip(outputZipFilename)
-	// This is too smell
-	if errors.Is(err, ErrEmptyFile) {
-		// PASS
-		t.Log(err.Error())
+	_, err := NewFromFiles(templateFilename, waybillWithEmptyPageData)
+	if errors.Is(err, ErrFileDataWithoutPages) {
+		// Ok
 	} else {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -133,8 +117,21 @@ func TestIncompatible(t *testing.T) {
 	}
 
 	err = fg.GenerateZip(outputZipFilename)
-	if err != nil {
+	if errors.Is(err, ErrIncompatible) {
 		// Ok
+	} else {
+		t.Fail()
+	}
+}
+
+func TestBadTemplate(t *testing.T) {
+
+}
+
+func TestEmptyTemplate(t *testing.T) {
+	_, err := NewFromFiles(emptyTemplatePath, goodWaybill)
+	if errors.Is(err, ErrBadTemplate) {
+		//ok
 	} else {
 		t.Fail()
 	}
