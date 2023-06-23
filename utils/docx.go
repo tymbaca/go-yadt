@@ -5,17 +5,19 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
 )
 
 var (
 	ErrPlaceholdersNotFound = errors.New("placeholders not found in document")
-	xmlTextTag              = "w:t"
+	ErrDelimitersNotPassed  = errors.New("delimiters did not passed")
+	xmlTextTag              = "t"
 )
 
 /*
-FindPlaceholders finds all placeholders inside of given docx file (as byte slice). 
+FindPlaceholders finds all placeholders inside of given docx file (as byte slice).
 Takes delimiter regex pattern. For example if placeholder is "{{my_key}}", then pattern would be "{{.*}}"
 If given pattern is empty string then func would use default pattern "{.*}".
 
@@ -24,36 +26,67 @@ placeholders as a string slice. Returns error:
 - If there were no placeholders
 - If given byte slice is not a valid docx file
 */
-func FindPlaceholders(templateBytes []byte, delimiterRegexPattern string) ([]string, error) {
-	if delimiterRegexPattern == "" {
-		delimiterRegexPattern = "{.*}"
+func FindPlaceholders(templateBytes []byte, leftDelimiter string, rightDelimiter string) ([]string, error) {
+	if leftDelimiter == "" || rightDelimiter == "" {
+		return nil, ErrDelimitersNotPassed
 	}
-	
+
 	documentXml, err := getDocumentXml(templateBytes)
 	if err != nil {
 		return nil, err
 	}
 	var placeholders []string
+
 	xmlDecoder := xml.NewDecoder(documentXml)
-	regex := regexp.Compile(delimiterRegexPattern)
+
+	delimiterRegexPattern := fmt.Sprintf("%s(.*)%s", leftDelimiter, rightDelimiter)
+	regex, err := regexp.Compile(delimiterRegexPattern)
+	if err != nil {
+		return nil, err
+	}
+	var textElements []xml.StartElement
 	for {
 		token, _ := xmlDecoder.Token()
 		if token == nil {
 			break // End of file
 		}
+		textElements = appendTextElements(token, textElements)
+	}
 
-		if startElement, ok := token.(xml.StartElement); ok {
-			if startElement.Name.Local == xmlTextTag {
-				var innerText string
-				xmlDecoder.DecodeElement(&innerText, &startElement)
-				if match, _ := regex.MatchString() 
-				placeholders = append(placeholders)
+	placeholders = findPlaceholders(textElements, xmlDecoder, regex)
+
+	if len(placeholders) > 0 {
+		return placeholders, nil
+	} else {
+		return nil, ErrPlaceholdersNotFound
+	}
+}
+
+func appendTextElements(element interface{}, textElements []xml.StartElement) []xml.StartElement {
+	if startElement, ok := element.(xml.StartElement); ok {
+		if len(startElement.Attr) > 0 {
+			for _, attr := range startElement.Attr {
+				textElements = appendTextElements(attr, textElements)
 			}
-		} else {
-			return nil, errors.New("error while parsing xml")
+		}
+		if startElement.Name.Local == xmlTextTag {
+			textElements = append(textElements, startElement)
 		}
 	}
-	return placeholders, nil
+	return textElements
+}
+
+func findPlaceholders(textElements []xml.StartElement, xmlDecoder *xml.Decoder, regex *regexp.Regexp) []string {
+	var placeholders []string
+	for _, element := range textElements {
+		var innerText string
+		xmlDecoder.DecodeElement(&innerText, &element)
+		if match := regex.MatchString(innerText); match {
+			placeholderKey := regex.FindStringSubmatch(innerText)[1]
+			placeholders = append(placeholders, placeholderKey)
+		}
+	}
+	return placeholders
 }
 
 var documentXmlPathInZip = "word/document.xml"

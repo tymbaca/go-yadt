@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"encoding/xml"
 	"os"
 	"testing"
+	"reflect"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,10 +36,17 @@ func TestCompressFiles(t *testing.T) {
 	}
 }
 
-func TestDocxSearch(t *testing.T) {
-	docx_reader, err := os.Open(goodTemplate)
+func TestFindPlaceholdersInDocx(t *testing.T) {
+
+	templateBytes, err := os.ReadFile(goodTemplate)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	decoder := xml.NewDecoder()
+	placeholders, err := FindPlaceholders(templateBytes, "{", "}")
+	if err != nil {
+		t.Fail()
+	}
+	if reflect.DeepEqual(placeholders, []string{"organisation", "address"}) {
+		t.Fail()
+	}
 }
