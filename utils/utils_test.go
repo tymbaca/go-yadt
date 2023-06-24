@@ -62,3 +62,17 @@ func TestFindPlaceholdersEmpty(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestUniqueStringSlice(t *testing.T) {
+	slice := []string{"hello", "hello", "you", "hello", "mama"}
+	unique_slice := UniqueStringSlice(slice)
+	reflect.DeepEqual(unique_slice, []string{"mama", "you", "hello"})
+}
+
+func TestCompareSlicesAsSets(t *testing.T) {
+	slice1 := []string{"hello", "world"}
+	slice2 := []string{"world", "world", "hello", "world", "hello"}
+	if CompareSlicesAsSets[string](slice1, slice2) != true {
+		t.Fail()
+	}
+}
