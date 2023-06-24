@@ -1,9 +1,10 @@
 package utils
 
 import (
+	"errors"
 	"os"
-	"testing"
 	"reflect"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,6 +14,7 @@ var (
 	articleFilename = "tests/article.md"
 	soundFilename   = "tests/sound.mp3"
 	goodTemplate    = "tests/template.docx"
+	emptyTemplate   = "tests/empty_template.docx"
 )
 
 func TestStreamToBytes(t *testing.T) {
@@ -37,7 +39,6 @@ func TestCompressFiles(t *testing.T) {
 }
 
 func TestFindPlaceholdersInDocx(t *testing.T) {
-
 	templateBytes, err := os.ReadFile(goodTemplate)
 	if err != nil {
 		panic(err)
@@ -46,7 +47,18 @@ func TestFindPlaceholdersInDocx(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	if reflect.DeepEqual(placeholders, []string{"organisation", "address"}) {
+	if !reflect.DeepEqual(placeholders, []string{"organisation", "address"}) {
+		t.Fail()
+	}
+}
+
+func TestFindPlaceholdersEmpty(t *testing.T) {
+	templateBytes, err := os.ReadFile(emptyTemplate)
+	if err != nil {
+		panic(err)
+	}
+	_, err = FindPlaceholders(templateBytes, "{", "}")
+	if !errors.Is(err, ErrPlaceholdersNotFound) {
 		t.Fail()
 	}
 }

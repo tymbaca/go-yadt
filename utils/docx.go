@@ -3,17 +3,21 @@ package utils
 import (
 	"archive/zip"
 	"bytes"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
+
+	"golang.org/x/net/html"
 )
 
 var (
 	ErrPlaceholdersNotFound = errors.New("placeholders not found in document")
 	ErrDelimitersNotPassed  = errors.New("delimiters did not passed")
-	xmlTextTag              = "t"
+
+	documentXmlPathInZip = "word/document.xml"
+	xmlTextTag           = "t"
 )
 
 /*
@@ -30,80 +34,80 @@ func FindPlaceholders(templateBytes []byte, leftDelimiter string, rightDelimiter
 	if leftDelimiter == "" || rightDelimiter == "" {
 		return nil, ErrDelimitersNotPassed
 	}
+	delimiterRegexPattern := fmt.Sprintf("%s(.+?)%s", leftDelimiter, rightDelimiter)
 
-	documentXml, err := getDocumentXml(templateBytes)
+	documentXmlReader, err := getDocumentXmlReader(templateBytes)
 	if err != nil {
 		return nil, err
 	}
-	var placeholders []string
-
-	xmlDecoder := xml.NewDecoder(documentXml)
-
-	delimiterRegexPattern := fmt.Sprintf("%s(.*)%s", leftDelimiter, rightDelimiter)
-	regex, err := regexp.Compile(delimiterRegexPattern)
+	documentText := getAllXmlText(documentXmlReader)
+	placeholders, err := findPlaceholders(documentText, delimiterRegexPattern)
 	if err != nil {
 		return nil, err
 	}
-	var textElements []xml.StartElement
+	return placeholders, nil
+}
+
+func getDocumentXmlReader(templateBytes []byte) (io.Reader, error) {
+	templateReader := bytes.NewReader(templateBytes)
+	zipReader, err := zip.NewReader(templateReader, int64(len(templateBytes)))
+	if err != nil {
+		return nil, err
+	}
+	file, err := zipReader.Open(documentXmlPathInZip)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+// Gets `word/document.xml` as string from given `docx` file (it's basically `zip`). Returns error
+// if file is not a valid `docx`
+func getAllXmlText(reader io.Reader) string {
+
+	var output string
+	tokenizer := html.NewTokenizer(reader)
+	prevToken := tokenizer.Token()
+loop:
 	for {
-		token, _ := xmlDecoder.Token()
-		if token == nil {
-			break // End of file
+		tok := tokenizer.Next()
+		switch {
+		case tok == html.ErrorToken:
+			break loop // End of the document,  done
+		case tok == html.StartTagToken:
+			prevToken = tokenizer.Token()
+		case tok == html.TextToken:
+			if prevToken.Data == "script" {
+				continue
+			}
+			TxtContent := strings.TrimSpace(html.UnescapeString(string(tokenizer.Text())))
+			if len(TxtContent) > 0 {
+				output += TxtContent
+			}
 		}
-		textElements = appendTextElements(token, textElements)
+	}
+	return output
+}
+
+func findPlaceholders(text string, delimiterRegexPattern string) ([]string, error) {
+	var placeholders []string
+	r, err := regexp.Compile(delimiterRegexPattern)
+	if err != nil {
+		return nil, err
 	}
 
-	placeholders = findPlaceholders(textElements, xmlDecoder, regex)
+	// find and process
+	matchSet := r.FindAllStringSubmatch(text, -1)
+	for _, submatchPair := range matchSet {
+		placeholder := submatchPair[1] // submatch is second element in FindAllStringSubmatch result slice
+		placeholder = strings.TrimSpace(placeholder)
+		placeholders = append(placeholders, placeholder)
+	}
 
+	// return
 	if len(placeholders) > 0 {
 		return placeholders, nil
 	} else {
 		return nil, ErrPlaceholdersNotFound
 	}
-}
-
-func appendTextElements(element interface{}, textElements []xml.StartElement) []xml.StartElement {
-	if startElement, ok := element.(xml.StartElement); ok {
-		if len(startElement.Attr) > 0 {
-			for _, attr := range startElement.Attr {
-				textElements = appendTextElements(attr, textElements)
-			}
-		}
-		if startElement.Name.Local == xmlTextTag {
-			textElements = append(textElements, startElement)
-		}
-	}
-	return textElements
-}
-
-func findPlaceholders(textElements []xml.StartElement, xmlDecoder *xml.Decoder, regex *regexp.Regexp) []string {
-	var placeholders []string
-	for _, element := range textElements {
-		var innerText string
-		xmlDecoder.DecodeElement(&innerText, &element)
-		if match := regex.MatchString(innerText); match {
-			placeholderKey := regex.FindStringSubmatch(innerText)[1]
-			placeholders = append(placeholders, placeholderKey)
-		}
-	}
-	return placeholders
-}
-
-var documentXmlPathInZip = "word/document.xml"
-
-// Gets `word/document.xml` file inside of given `docx` file (it's basically `zip`). Returns error
-// if file is not a valid `docx`
-func getDocumentXml(templateBytes []byte) (io.Reader, error) {
-	templateReader := bytes.NewReader(templateBytes)
-	// Opening docx as a zip
-	zipReader, err := zip.NewReader(templateReader, int64(len(templateBytes)))
-	if err != nil {
-		return nil, err
-	}
-
-	documentXml, err := zipReader.Open(documentXmlPathInZip)
-	if err != nil {
-		return nil, err
-	}
-	return documentXml, nil
 }
