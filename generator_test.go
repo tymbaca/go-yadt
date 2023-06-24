@@ -109,15 +109,8 @@ func TestDifferentFields(t *testing.T) {
 }
 
 func TestIncompatible(t *testing.T) {
-	fg, err := NewFromFiles(templateFilename, waybillIncompatible)
+	_, err := NewFromFiles(templateFilename, waybillIncompatible)
 	if err != nil {
-		// Ok
-	} else {
-		t.Fail()
-	}
-
-	err = fg.GenerateZip(outputZipFilename)
-	if errors.Is(err, ErrIncompatible) {
 		// Ok
 	} else {
 		t.Fail()
@@ -130,7 +123,7 @@ func TestBadTemplate(t *testing.T) {
 
 func TestEmptyTemplate(t *testing.T) {
 	_, err := NewFromFiles(emptyTemplatePath, goodWaybill)
-	if errors.Is(err, ErrBadTemplate) {
+	if errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		//ok
 	} else {
 		t.Fail()

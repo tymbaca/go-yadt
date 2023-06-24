@@ -14,11 +14,13 @@ import (
 
 	"github.com/tymbaca/go-yadt/utils"
 
-	mapset "github.com/deckarep/golang-set"
 	"github.com/lukasjarosch/go-docx"
 )
 
-var err error
+var (
+	leftDelimiter  = "{"
+	rightDelimiter = "}"
+)
 
 // FileGenerator constructor. Takes template and json data as an io.Reader's.
 func New(templateStream io.Reader, jsonStream io.Reader) (*FileGenerator, error) {
@@ -143,7 +145,7 @@ func generatePageFiles(fileData fileData, templateBytes []byte, tmpDirectory str
 			return err
 		})
 	}
-	if err = eg.Wait(); err != nil {
+	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
 	return pageFilesPaths, nil
@@ -152,7 +154,7 @@ func generatePageFiles(fileData fileData, templateBytes []byte, tmpDirectory str
 func generatePageFile(templateBytes []byte, outputPath string, pageData docx.PlaceholderMap) error {
 	template, err := docx.OpenBytes(templateBytes)
 	if err != nil {
-		return ErrBadTemplate
+		return err
 	}
 
 	err = template.ReplaceAll(pageData)
@@ -220,17 +222,17 @@ func (g *FileGenerator) validateInput() error {
 		return err
 	}
 
-	// err = g.validateIsCompatible()
-	// if err != nil {
-	// 	return err
-	// }
+	err = g.validateIsCompatible()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (g *FileGenerator) validateTemplate() error {
 	_, err := docx.OpenBytes(g.templateBytes)
 	if err != nil {
-		return ErrBadTemplate
+		return err
 	}
 	return nil
 }
@@ -248,13 +250,22 @@ func (g *FileGenerator) validateData() error {
 	return nil
 }
 
+func (g *FileGenerator) getDataFields() []string {
+	fieldMap := (*g.data)[0].Pages[0]
+	var dataFields []string
+	for key := range fieldMap {
+		dataFields = append(dataFields, key)
+	}
+	return dataFields
+}
+
 func (g *FileGenerator) checkDataFieldSameness() error {
 	files := *g.data
 	expectedFields := getPageDataFields(files[0].Pages[0])
 	for _, file := range files {
 		for _, page := range file.Pages {
 			fields := getPageDataFields(page)
-			if !expectedFields.Equal(fields) {
+			if !utils.CompareSlicesAsSets[string](expectedFields, fields) {
 				return ErrDataWithDifferentFields
 			}
 		}
@@ -273,45 +284,30 @@ func (g *FileGenerator) checkDataFieldsPagesExist() error {
 }
 
 func (g *FileGenerator) validateIsCompatible() error {
-	templateFields := getTemplateFields(g.templateBytes)
+	templateFields, err := utils.FindPlaceholders(g.templateBytes, leftDelimiter, rightDelimiter)
+	if errors.Is(err, utils.ErrPlaceholdersNotFound) {
+		return ErrTemplatePlaceholdersNotFound
+	} else if err != nil {
+		return err
+	}
 	dataFields := getDataFields(g.data)
-	if !templateFields.Equal(dataFields) {
-		return ErrIncompatible
-	} else {
+	if utils.CompareSlicesAsSets[string](templateFields, dataFields) {
 		return nil
+	} else {
+		return ErrIncompatible
 	}
 }
 
-func getTemplateFields(templateBytes []byte) mapset.Set {
-	template, _ := docx.OpenBytes(templateBytes)
-	// if err != nil {
-	// 	return BadTemplateError
-	// }
-	fields := template.Placeholders()
-	placeholder := fields[0]
-	fmt.Println(placeholder)
-	for _, field := range fields {
-		fragments := field.Fragments
-		for _, fragment := range fragments {
-			str := fragment.String(templateBytes)
-			fmt.Println(str)
-			text := fragment.Text(templateBytes)
-			fmt.Println(text)
-		}
-	}
-	return nil
-}
-
-func getDataFields(parseData *parseData) mapset.Set {
+func getDataFields(parseData *parseData) []string {
 	data := *parseData
 	fields := getPageDataFields(data[0].Pages[0])
 	return fields
 }
 
-func getPageDataFields(pageData docx.PlaceholderMap) mapset.Set {
-	fields := mapset.NewSet()
+func getPageDataFields(pageData docx.PlaceholderMap) []string {
+	var fields []string
 	for field := range pageData {
-		fields.Add(field)
+		fields = append(fields, field)
 	}
 	return fields
 }
