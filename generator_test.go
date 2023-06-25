@@ -14,14 +14,21 @@ var (
 	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
 	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
 	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
-	templateFilename           = "tests/test_template.docx"
+	templateFilename           = "tests/template.docx"
 	emptyTemplatePath          = "tests/empty_template.docx"
 	outputZipFilename          = "tests/output.zip"
 )
 
 func TestNew(t *testing.T) {
-	templateStream, _ := os.Open(templateFilename)
-	jsonStream, _ := os.Open(goodWaybill)
+
+	templateStream, err := os.Open(templateFilename)
+	if err != nil {
+		panic(err)
+	}
+	jsonStream, err := os.Open(goodWaybill)
+	if err != nil {
+		panic(err)
+	}
 
 	templateBytesReference, _ := os.ReadFile(templateFilename)
 	jsonBytesReference, _ := os.ReadFile(goodWaybill)
@@ -39,8 +46,14 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewFromBytes(t *testing.T) {
-	templateBytesReference, _ := os.ReadFile(templateFilename)
-	jsonBytesReference, _ := os.ReadFile(goodWaybill)
+	templateBytesReference, err := os.ReadFile(templateFilename)
+	if err != nil {
+		panic(err)
+	}
+	jsonBytesReference, err := os.ReadFile(goodWaybill)
+	if err != nil {
+		panic(err)
+	}
 
 	fileGenerator, err := NewFromBytes(templateBytesReference, jsonBytesReference)
 	if err != nil {
@@ -126,6 +139,6 @@ func TestEmptyTemplate(t *testing.T) {
 	if errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		//ok
 	} else {
-		t.Fail()
+		t.Error(err)
 	}
 }
