@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ErrPlaceholdersNotFound = errors.New("placeholders not found in document")
-	ErrDelimitersNotPassed  = errors.New("delimiters did not passed")
+	ErrTemplatePlaceholdersNotFound = errors.New("placeholders not found in template")
+	ErrDelimitersNotPassed          = errors.New("delimiters did not passed")
+	ErrBadTemplate                  = errors.New("can't open template file, it's broken")
 
 	documentXmlPathInZip = "word/document.xml"
 	xmlTextTag           = "t"
@@ -52,11 +53,11 @@ func getDocumentXmlReader(templateBytes []byte) (io.Reader, error) {
 	templateReader := bytes.NewReader(templateBytes)
 	zipReader, err := zip.NewReader(templateReader, int64(len(templateBytes)))
 	if err != nil {
-		return nil, err
+		return nil, ErrBadTemplate
 	}
 	file, err := zipReader.Open(documentXmlPathInZip)
 	if err != nil {
-		return nil, err
+		return nil, ErrBadTemplate
 	}
 	return file, nil
 }
@@ -108,6 +109,6 @@ func findPlaceholders(text string, delimiterRegexPattern string) ([]string, erro
 	if len(placeholders) > 0 {
 		return placeholders, nil
 	} else {
-		return nil, ErrPlaceholdersNotFound
+		return nil, ErrTemplatePlaceholdersNotFound
 	}
 }

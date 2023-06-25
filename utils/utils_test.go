@@ -58,7 +58,7 @@ func TestFindPlaceholdersEmpty(t *testing.T) {
 		panic(err)
 	}
 	_, err = FindPlaceholders(templateBytes, "{", "}")
-	if !errors.Is(err, ErrPlaceholdersNotFound) {
+	if !errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		t.Fail()
 	}
 }

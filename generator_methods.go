@@ -285,9 +285,7 @@ func (g *FileGenerator) checkDataFieldsPagesExist() error {
 
 func (g *FileGenerator) validateIsCompatible() error {
 	templateFields, err := utils.FindPlaceholders(g.templateBytes, leftDelimiter, rightDelimiter)
-	if errors.Is(err, utils.ErrPlaceholdersNotFound) {
-		return ErrTemplatePlaceholdersNotFound
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 	dataFields := getDataFields(g.data)
