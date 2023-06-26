@@ -6,17 +6,22 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lukasjarosch/go-docx"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	goodWaybill                = "tests/waybill.json"
-	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
-	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
-	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
-	templateFilename           = "tests/template.docx"
-	emptyTemplatePath          = "tests/empty_template.docx"
-	outputZipFilename          = "tests/output.zip"
+	goodWaybill                   = "tests/waybill.json"
+	waybillWithEmptyPageData      = "tests/bad_waybill_with_empty_pagedata.json"
+	waybillWithDifferentFields    = "tests/bad_waybill_different_fields.json"
+	waybillIncompatible           = "tests/bad_waybill_not_compatible.json"
+	templateFilename              = "tests/template.docx"
+	emptyTemplatePath             = "tests/empty_template.docx"
+	templateWithLeadingWhitespace = "tests/template_leading_whitespace.docx"
+	templateWithTailingWhitespace = "tests/template_tailing_whitespace.docx"
+	templateWithBothWhitespace    = "tests/template_both_whitespace.docx"
+	outputZipFilename             = "tests/output.zip"
+	outputDocx                    = "tests/output.docx"
 )
 
 func TestNew(t *testing.T) {
@@ -89,6 +94,7 @@ func TestGenerateZip(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
+	// just for log
 	fileCount := len(*fileGenerator.data)
 	pageCount := 0
 	for _, fileData := range *fileGenerator.data {
@@ -105,11 +111,28 @@ func TestGenerateZip(t *testing.T) {
 	}
 }
 
-func TestEmptyPageGenerateZip(t *testing.T) {
+func TestEmptyPageValidate(t *testing.T) {
 	_, err := NewFromFiles(templateFilename, waybillWithEmptyPageData)
 	if errors.Is(err, ErrFileDataWithoutPages) {
 		// Ok
 	} else {
+		t.Fatal()
+	}
+}
+
+func TestWhitespaceValidate(t *testing.T) {
+	_, err := NewFromFiles(templateWithLeadingWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
+		t.Fatal()
+	}
+
+	_, err = NewFromFiles(templateWithTailingWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
+		t.Fatal()
+	}
+
+	_, err = NewFromFiles(templateWithBothWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
 		t.Fatal()
 	}
 }
@@ -139,6 +162,22 @@ func TestEmptyTemplate(t *testing.T) {
 	if errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		//ok
 	} else {
+		t.Error(err)
+	}
+}
+
+func TestPageFileGenerate(t *testing.T) {
+	templateBytes, err := os.ReadFile(templateFilename)
+	if err != nil {
+		panic(err)
+	}
+	pageData := docx.PlaceholderMap{
+		"organisation": "Baskins Bread",
+		"address":      "Frunze 42",
+	}
+	//////////////////
+	err = generatePageFile(templateBytes, outputDocx, pageData)
+	if err != nil {
 		t.Error(err)
 	}
 }

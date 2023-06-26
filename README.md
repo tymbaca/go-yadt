@@ -35,6 +35,10 @@ In this example we have two fields:
 - `firstName`
 - `lastName`
 
+> **Warning**
+> Your template placeholders cannot have leading or tailing whitespaces.
+> `{ firstName}`, `{firstName }` or `{ firstName }` placeholder will lead to validation error.
+
 You will need to specify values for that field in `json` data.
 
 ### Input `json` data

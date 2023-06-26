@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrPlaceholderWithWhitespaces   = utils.ErrPlaceholderWithWhitespaces
 	ErrTemplatePlaceholdersNotFound = utils.ErrTemplatePlaceholdersNotFound
 	ErrBadTemplate                  = utils.ErrBadTemplate
 	ErrValidation                   = errors.New("error while validating input data")

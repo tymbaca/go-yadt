@@ -16,6 +16,7 @@ var (
 	ErrTemplatePlaceholdersNotFound = errors.New("placeholders not found in template")
 	ErrDelimitersNotPassed          = errors.New("delimiters did not passed")
 	ErrBadTemplate                  = errors.New("can't open template file, it's broken")
+	ErrPlaceholderWithWhitespaces   = errors.New("some placeholders template has leading or tailing whitespace")
 
 	documentXmlPathInZip = "word/document.xml"
 	xmlTextTag           = "t"
@@ -30,6 +31,7 @@ Returns found
 placeholders as a string slice. Returns error:
 - If there were no placeholders
 - If given byte slice is not a valid docx file
+- If placeholders have leading or tailing whitespace inside of placeholder (like `{ key}`, `{key }` or `{ key }`)
 */
 func FindPlaceholders(templateBytes []byte, leftDelimiter string, rightDelimiter string) ([]string, error) {
 	if leftDelimiter == "" || rightDelimiter == "" {
@@ -81,7 +83,7 @@ loop:
 			if prevToken.Data == "script" {
 				continue
 			}
-			TxtContent := strings.TrimSpace(html.UnescapeString(string(tokenizer.Text())))
+			TxtContent := html.UnescapeString(string(tokenizer.Text()))
 			if len(TxtContent) > 0 {
 				output += TxtContent
 			}
@@ -101,7 +103,11 @@ func findPlaceholders(text string, delimiterRegexPattern string) ([]string, erro
 	matchSet := r.FindAllStringSubmatch(text, -1)
 	for _, submatchPair := range matchSet {
 		placeholder := submatchPair[1] // submatch is second element in FindAllStringSubmatch result slice
-		placeholder = strings.TrimSpace(placeholder)
+
+		if placeholder != strings.TrimSpace(placeholder) {
+			return nil, ErrPlaceholderWithWhitespaces
+		}
+
 		placeholders = append(placeholders, placeholder)
 	}
 
