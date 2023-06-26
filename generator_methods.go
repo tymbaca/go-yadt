@@ -234,6 +234,10 @@ func (g *FileGenerator) validateTemplate() error {
 	if err != nil {
 		return err
 	}
+	_, err = utils.FindPlaceholders(g.templateBytes, leftDelimiter, rightDelimiter)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
