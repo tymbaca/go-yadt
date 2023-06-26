@@ -11,17 +11,23 @@ import (
 )
 
 var (
-	goodWaybill                   = "tests/waybill.json"
-	waybillWithEmptyPageData      = "tests/bad_waybill_with_empty_pagedata.json"
-	waybillWithDifferentFields    = "tests/bad_waybill_different_fields.json"
-	waybillIncompatible           = "tests/bad_waybill_not_compatible.json"
-	templateFilename              = "tests/template.docx"
-	emptyTemplatePath             = "tests/empty_template.docx"
+	// Data
+	goodWaybill                = "tests/waybill.json"
+	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
+	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
+	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
+	templateFilename           = "tests/template.docx"
+
+	// Templates
+	emptyTemplate                 = "tests/empty_template.docx"
 	templateWithLeadingWhitespace = "tests/template_leading_whitespace.docx"
 	templateWithTailingWhitespace = "tests/template_tailing_whitespace.docx"
 	templateWithBothWhitespace    = "tests/template_both_whitespace.docx"
-	outputZipFilename             = "tests/output.zip"
-	outputDocx                    = "tests/output.docx"
+	brokenTemplate                = "tests/broken_template.docx"
+
+	// Output
+	outputZipFilename = "tests/output.zip"
+	outputDocx        = "tests/output.docx"
 )
 
 func TestNew(t *testing.T) {
@@ -154,11 +160,14 @@ func TestIncompatible(t *testing.T) {
 }
 
 func TestBadTemplate(t *testing.T) {
-
+	_, err := NewFromFiles(brokenTemplate, waybillIncompatible)
+	if err == nil {
+		t.Fail()
+	}
 }
 
 func TestEmptyTemplate(t *testing.T) {
-	_, err := NewFromFiles(emptyTemplatePath, goodWaybill)
+	_, err := NewFromFiles(emptyTemplate, goodWaybill)
 	if errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		//ok
 	} else {
