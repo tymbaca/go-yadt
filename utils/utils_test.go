@@ -10,11 +10,12 @@ import (
 )
 
 var (
-	imageFilename   = "tests/image.png"
-	articleFilename = "tests/article.md"
-	soundFilename   = "tests/sound.mp3"
-	goodTemplate    = "tests/template.docx"
-	emptyTemplate   = "tests/empty_template.docx"
+	imageFilename                = "tests/image.png"
+	articleFilename              = "tests/article.md"
+	soundFilename                = "tests/sound.mp3"
+	goodTemplate                 = "tests/template.docx"
+	templateWithEmptyPlaceholder = "tests/empty_template.docx"
+	templateWithoutPlaceholders  = "tests/template_without_placeholders.docx"
 )
 
 func TestStreamToBytes(t *testing.T) {
@@ -52,8 +53,19 @@ func TestFindPlaceholdersInDocx(t *testing.T) {
 	}
 }
 
-func TestFindPlaceholdersEmpty(t *testing.T) {
-	templateBytes, err := os.ReadFile(emptyTemplate)
+func TestFindEmptyPlaceholder(t *testing.T) {
+	templateBytes, err := os.ReadFile(templateWithEmptyPlaceholder)
+	if err != nil {
+		panic(err)
+	}
+	_, err = FindPlaceholders(templateBytes, "{", "}")
+	if !errors.Is(err, ErrTemplatePlaceholdersNotFound) {
+		t.Fail()
+	}
+}
+
+func TestPlaceholdersNotFound(t *testing.T) {
+	templateBytes, err := os.ReadFile(templateWithoutPlaceholders)
 	if err != nil {
 		panic(err)
 	}

@@ -104,6 +104,10 @@ func findPlaceholders(text string, delimiterRegexPattern string) ([]string, erro
 	for _, submatchPair := range matchSet {
 		placeholder := submatchPair[1] // submatch is second element in FindAllStringSubmatch result slice
 
+		if len(strings.TrimSpace(placeholder)) == 0 {
+			return nil, ErrTemplatePlaceholdersNotFound
+		}
+
 		if placeholder != strings.TrimSpace(placeholder) {
 			return nil, ErrPlaceholderWithWhitespaces
 		}
