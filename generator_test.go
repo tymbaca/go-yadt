@@ -16,9 +16,10 @@ var (
 	waybillWithEmptyPageData   = "tests/bad_waybill_with_empty_pagedata.json"
 	waybillWithDifferentFields = "tests/bad_waybill_different_fields.json"
 	waybillIncompatible        = "tests/bad_waybill_not_compatible.json"
-	templateFilename           = "tests/template.docx"
+	veryBadWaybill             = "tests/very_bad_waybill.json"
 
 	// Templates
+	templateFilename              = "tests/template.docx"
 	emptyTemplate                 = "tests/empty_template.docx"
 	templateWithLeadingWhitespace = "tests/template_leading_whitespace.docx"
 	templateWithTailingWhitespace = "tests/template_tailing_whitespace.docx"
@@ -126,26 +127,16 @@ func TestEmptyPageValidate(t *testing.T) {
 	}
 }
 
-func TestWhitespaceValidate(t *testing.T) {
-	_, err := NewFromFiles(templateWithLeadingWhitespace, goodWaybill)
-	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
-		t.Fatal()
-	}
-
-	_, err = NewFromFiles(templateWithTailingWhitespace, goodWaybill)
-	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
-		t.Fatal()
-	}
-
-	_, err = NewFromFiles(templateWithBothWhitespace, goodWaybill)
-	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
-		t.Fatal()
-	}
-}
-
 func TestDifferentFields(t *testing.T) {
 	_, err := NewFromFiles(templateFilename, waybillWithDifferentFields)
 	if !errors.Is(err, ErrDataWithDifferentFields) {
+		t.Fatal(err)
+	}
+}
+
+func TestVeryBadWaybill(t *testing.T) {
+	_, err := NewFromFiles(templateFilename, veryBadWaybill)
+	if !errors.Is(err, ErrBadData) {
 		t.Fatal(err)
 	}
 }
@@ -172,6 +163,23 @@ func TestEmptyTemplate(t *testing.T) {
 		//ok
 	} else {
 		t.Error(err)
+	}
+}
+
+func TestWhitespaceValidate(t *testing.T) {
+	_, err := NewFromFiles(templateWithLeadingWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
+		t.Fatal()
+	}
+
+	_, err = NewFromFiles(templateWithTailingWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
+		t.Fatal()
+	}
+
+	_, err = NewFromFiles(templateWithBothWhitespace, goodWaybill)
+	if !errors.Is(err, ErrPlaceholderWithWhitespaces) {
+		t.Fatal()
 	}
 }
 

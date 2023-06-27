@@ -242,6 +242,10 @@ func (g *FileGenerator) validateTemplate() error {
 }
 
 func (g *FileGenerator) validateData() error {
+	if len(*g.data) == 0 {
+		return ErrBadData
+	}
+
 	err := g.checkDataFieldsPagesExist()
 	if err != nil {
 		return err
