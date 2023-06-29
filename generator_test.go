@@ -101,16 +101,6 @@ func TestGenerateZip(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	// just for log
-	fileCount := len(*fileGenerator.data)
-	pageCount := 0
-	for _, fileData := range *fileGenerator.data {
-		pageCount += len(fileData.Pages)
-	}
-
-	t.Logf("Starting generation for %d files, %d pages total...", fileCount, pageCount)
-	t.Log(fileGenerator.tmpDirectory)
-
 	// Run test
 	err = fileGenerator.GenerateZip(outputZipFilename)
 	if err != nil {
