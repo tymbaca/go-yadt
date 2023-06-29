@@ -21,6 +21,16 @@ jobs:
       with:
         go-version: 1.19
 
+    - name: Install Pagemerger
+      run: |
+        git clone https://github.com/tymbaca/pagemerger.git
+        cd pagemerger 
+        dotnet add package DocumentFormat.OpenXml --version 2.20.0
+        dotnet add package CommandLineParser --version 2.9.1
+        dotnet publish -o ./result -p:PublishSingleFile=true --self-contained false
+        cd result
+        sudo mv pagemerger /usr/local/bin
+        
     - name: Build
       run: go build -v ./...
 
