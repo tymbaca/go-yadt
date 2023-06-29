@@ -232,7 +232,7 @@ func (g *FileGenerator) validateInput() error {
 func (g *FileGenerator) validateTemplate() error {
 	_, err := docx.OpenBytes(g.templateBytes)
 	if err != nil {
-		return err
+		return ErrBadTemplate
 	}
 	_, err = utils.FindPlaceholders(g.templateBytes, leftDelimiter, rightDelimiter)
 	if err != nil {

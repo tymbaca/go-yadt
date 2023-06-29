@@ -143,25 +143,21 @@ func TestVeryBadWaybill(t *testing.T) {
 
 func TestIncompatible(t *testing.T) {
 	_, err := NewFromFiles(templateFilename, waybillIncompatible)
-	if err != nil {
-		// Ok
-	} else {
+	if !errors.Is(err, ErrIncompatible) {
 		t.Fail()
 	}
 }
 
 func TestBadTemplate(t *testing.T) {
 	_, err := NewFromFiles(brokenTemplate, waybillIncompatible)
-	if err == nil {
+	if !errors.Is(err, ErrBadTemplate) {
 		t.Fail()
 	}
 }
 
 func TestEmptyTemplate(t *testing.T) {
 	_, err := NewFromFiles(emptyTemplate, goodWaybill)
-	if errors.Is(err, ErrTemplatePlaceholdersNotFound) {
-		//ok
-	} else {
+	if !errors.Is(err, ErrTemplatePlaceholdersNotFound) {
 		t.Error(err)
 	}
 }
