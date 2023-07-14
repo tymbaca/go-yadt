@@ -1,6 +1,8 @@
 FROM golang:latest as BUILDER
 
 WORKDIR /workspaces/go-yadt
+COPY go.* .
+RUN go mod download
 COPY . .
 
 # Create a test binary
@@ -26,4 +28,4 @@ COPY --from=PAGEMERGER_BUILDER /pagemerger/result/pagemerger /usr/local/bin
 WORKDIR /workspaces/go-yadt
 COPY --from=BUILDER /workspaces/go-yadt/ .
 
-# ENTRYPOINT ./go-yadt.test -test.v
+ENTRYPOINT ./go-yadt.test -test.v
