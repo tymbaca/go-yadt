@@ -61,7 +61,6 @@ func NewFromBytes(templateBytes []byte, jsonBytes []byte) (*FileGenerator, error
 
 // FileGenerator constructor. Takes template and json data filenames and read them.
 func NewFromFiles(templateFilename string, jsonFilename string) (*FileGenerator, error) {
-
 	templateBytes, err := os.ReadFile(templateFilename)
 	if err != nil {
 		return nil, err
@@ -193,7 +192,7 @@ func mergePageFilesToFile(targetFilenames []string, mergedFilename string) error
 		return errors.New("there is no specified files to merge, pass 1 or more filenames")
 	}
 	args := append([]string{mergerSetPageBreaksOption, mergedFilename}, targetFilenames...)
-	mergerCommand := exec.Command(pageMergerName, args...)
+	mergerCommand := exec.Command(getPageMergerPath(), args...)
 	output, err := mergerCommand.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("error while using pagemerger CLI: \n%s", string(output))

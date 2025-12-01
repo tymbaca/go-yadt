@@ -10,17 +10,11 @@ const (
 	mergerSetPageBreaksOption string = "-b"
 )
 
-var pageMergerName string
-
-func init() {
-	setPageMergerName()
-}
-
-func setPageMergerName() {
+func getPageMergerPath() string {
 	envMergerName := os.Getenv(mergerEnvKey)
 	if envMergerName == "" {
-		pageMergerName = mergerDefaultName
-	} else {
-		pageMergerName = envMergerName
+		return mergerDefaultName
 	}
+
+	return envMergerName
 }
